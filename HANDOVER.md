@@ -372,8 +372,13 @@ inconsistencies from a live screenshot comparison against Organizer:
   star-rating buttons) unchanged — their icon-to-box fill ratio was already
   proportionate.
 - **Dev-credit logo sized inconsistently across apps**: `.dev-logo-img` here used
-  `max-width: 120px; max-height: 44px`, while both Organizer and Tools use a plain
-  `width: 64px`. Standardized on `width: 64px; height: auto` to match.
+  `max-width: 120px; max-height: 44px`, while both Organizer and Tools used a plain
+  `width: 64px`. Initially standardized on `width: 64px` to match the other two —
+  but the user preferred the original 120/44 sizing (64px read as too tiny), so
+  the standard flipped the other way: Library's original `max-width: 120px;
+  height: auto; max-height: 44px; object-fit: contain;` is now the shared value,
+  and Organizer/Tools were updated to match it instead (see their own HANDOVER
+  entries).
 
 **Verification**: `cd frontend && npm run build` clean after each change.
 

@@ -172,8 +172,9 @@ const navigateToPath = (path) => {
 }
 
 .dev-logo-img {
-  width: 64px;
+  max-width: 120px;
   height: auto;
+  max-height: 44px;
   object-fit: contain;
 }
 </style>
