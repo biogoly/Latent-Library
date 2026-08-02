@@ -32,7 +32,7 @@ import Chip from 'primevue/chip';
 import Divider from 'primevue/divider';
 import Dialog from 'primevue/dialog';
 import LButton from '@/components/ds/LButton.vue';
-import { Copy, X } from 'lucide-vue-next';
+import { Copy, X, FolderOpen, Code2, Tags, Pencil, Check, Star } from 'lucide-vue-next';
 import {useToast} from 'primevue/usetoast';
 
 
@@ -172,21 +172,33 @@ const cancelEdit = () => {
       </div>
       <div class="flex gap-2 justify-content-between">
         <div class="flex gap-2">
-          <Button icon="pi pi-folder-open" class="p-button-sm p-button-text text-white"
-                  v-tooltip.bottom="'Open File Location'" @click="openFileLocation"/>
-          <Button icon="pi pi-code" class="p-button-sm p-button-text text-white" v-tooltip.bottom="'View Raw Metadata'"
-                  @click="isRawVisible = true"/>
-          <Button icon="pi pi-tags" class="p-button-sm p-button-text text-white" v-tooltip.bottom="'Tag Image with WD14'"
-                  @click="openTagger"/>
+          <Button class="p-button-sm p-button-text text-white"
+                  v-tooltip.bottom="'Open File Location'" @click="openFileLocation">
+            <template #icon><FolderOpen :size="18" /></template>
+          </Button>
+          <Button class="p-button-sm p-button-text text-white" v-tooltip.bottom="'View Raw Metadata'"
+                  @click="isRawVisible = true">
+            <template #icon><Code2 :size="18" /></template>
+          </Button>
+          <Button class="p-button-sm p-button-text text-white" v-tooltip.bottom="'Tag Image with WD14'"
+                  @click="openTagger">
+            <template #icon><Tags :size="18" /></template>
+          </Button>
         </div>
         <div>
-          <Button v-if="!isEditing" icon="pi pi-pencil" class="p-button-sm p-button-text text-white"
-                  v-tooltip.bottom="'Edit Metadata / Add Notes'" @click="isEditing = true"/>
+          <Button v-if="!isEditing" class="p-button-sm p-button-text text-white"
+                  v-tooltip.bottom="'Edit Metadata / Add Notes'" @click="isEditing = true">
+            <template #icon><Pencil :size="18" /></template>
+          </Button>
           <div v-else class="flex gap-1">
-            <Button icon="pi pi-check" class="p-button-sm p-button-success p-button-text"
-                    v-tooltip.bottom="'Save Changes'" @click="saveMetadata"/>
-            <Button icon="pi pi-times" class="p-button-sm p-button-danger p-button-text"
-                    v-tooltip.bottom="'Cancel'" @click="cancelEdit"/>
+            <Button class="p-button-sm p-button-success p-button-text"
+                    v-tooltip.bottom="'Save Changes'" @click="saveMetadata">
+              <template #icon><Check :size="18" /></template>
+            </Button>
+            <Button class="p-button-sm p-button-danger p-button-text"
+                    v-tooltip.bottom="'Cancel'" @click="cancelEdit">
+              <template #icon><X :size="18" /></template>
+            </Button>
           </div>
         </div>
       </div>
@@ -196,10 +208,13 @@ const cancelEdit = () => {
       <div class="flex flex-column align-items-center mb-3">
         <div class="flex justify-content-center gap-1">
           <Button v-for="i in 5" :key="i"
-                  :icon="i <= store.currentRating ? 'pi pi-star-fill' : 'pi pi-star'"
                   class="p-button-text p-button-warning p-0 w-2rem h-2rem star-btn"
                   :class="{ 'text-yellow-500': i <= store.currentRating }"
-                  @click="(e) => setRating(i, e)"/>
+                  @click="(e) => setRating(i, e)">
+            <template #icon>
+              <Star :size="16" :fill="i <= store.currentRating ? 'currentColor' : 'none'" />
+            </template>
+          </Button>
         </div>
         <span class="text-xs text-500 cursor-pointer hover:text-white mt-1" @click="resetRating">Reset</span>
       </div>
@@ -212,8 +227,10 @@ const cancelEdit = () => {
         <div class="mb-3">
           <div class="flex justify-content-between align-items-center mb-1">
             <span class="font-bold text-sm text-500">PROMPT</span>
-            <Button icon="pi pi-copy" class="p-button-text p-button-sm p-0 w-2rem h-2rem text-500"
-                    v-tooltip.left="'Copy Prompt'" @click="copyToClipboard(meta.custom_prompt || meta.Prompt)"/>
+            <Button class="p-button-text p-button-sm p-0 w-2rem h-2rem text-500"
+                    v-tooltip.left="'Copy Prompt'" @click="copyToClipboard(meta.custom_prompt || meta.Prompt)">
+              <template #icon><Copy :size="14" /></template>
+            </Button>
           </div>
           <div class="glass-box p-2 border-round text-sm line-height-3 select-text"
                style="max-height: 150px; overflow-y: auto;">
@@ -225,8 +242,10 @@ const cancelEdit = () => {
         <div class="mb-3">
           <div class="flex justify-content-between align-items-center mb-1">
             <span class="font-bold text-sm text-red-400">NEGATIVE PROMPT</span>
-            <Button icon="pi pi-copy" class="p-button-text p-button-sm p-0 w-2rem h-2rem text-500"
-                    v-tooltip.left="'Copy Negative Prompt'" @click="copyToClipboard(meta.custom_negative_prompt || meta.Negative)"/>
+            <Button class="p-button-text p-button-sm p-0 w-2rem h-2rem text-500"
+                    v-tooltip.left="'Copy Negative Prompt'" @click="copyToClipboard(meta.custom_negative_prompt || meta.Negative)">
+              <template #icon><Copy :size="14" /></template>
+            </Button>
           </div>
           <div class="glass-box p-2 border-round text-sm line-height-3 select-text"
                style="max-height: 100px; overflow-y: auto;">

@@ -33,7 +33,7 @@ import {useToast} from 'primevue/usetoast';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import LButton from '@/components/ds/LButton.vue';
-import { Check, X } from 'lucide-vue-next';
+import { Check, X, Folder, Plus, Ban, Pencil, ExternalLink, Trash2 } from 'lucide-vue-next';
 
 const store = useBrowserStore();
 const route = useRoute();
@@ -130,13 +130,13 @@ const onContextMenu = async (payload) => {
 
   const addToCollectionItems = collections.map(col => ({
     label: col.name,
-    icon: 'pi pi-folder',
+    icon: Folder,
     command: () => addToCollection(col.name, isBatch ? Array.from(store.selectedFiles) : [file.path])
   }));
 
   addToCollectionItems.unshift({
     label: 'Create New Collection...',
-    icon: 'pi pi-plus',
+    icon: Plus,
     command: () => createNewCollection()
   });
 
@@ -148,14 +148,14 @@ const onContextMenu = async (payload) => {
 
   items.push({
     label: `Add to Collection${batchLabel}`,
-    icon: 'pi pi-plus',
+    icon: Plus,
     items: addToCollectionItems
   });
 
   if (store.activeCollection) {
     items.push({
       label: `Remove from Collection${batchLabel}`,
-      icon: 'pi pi-ban',
+      icon: Ban,
       command: () => removeFromCollection(store.activeCollection, isBatch ? Array.from(store.selectedFiles) : [file.path])
     });
   }
@@ -165,20 +165,20 @@ const onContextMenu = async (payload) => {
   if (!isBatch) {
     items.push({
       label: 'Rename',
-      icon: 'pi pi-pencil',
+      icon: Pencil,
       command: () => openRenameDialog(file.path)
     });
 
     items.push({
       label: 'Open in Explorer',
-      icon: 'pi pi-external-link',
+      icon: ExternalLink,
       command: () => openInExplorer(file.path)
     });
   }
 
   items.push({
     label: `Delete (Trash)${batchLabel}`,
-    icon: 'pi pi-trash',
+    icon: Trash2,
     command: () => deleteImage(isBatch ? Array.from(store.selectedFiles) : [file.path])
   });
 

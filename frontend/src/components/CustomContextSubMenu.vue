@@ -4,6 +4,7 @@
  * @description A recursive submenu component for the CustomContextMenu aligned with the Latent Design System.
  */
 import { ref } from 'vue';
+import { ChevronRight } from 'lucide-vue-next';
 
 const props = defineProps({
   model: {
@@ -47,9 +48,10 @@ const execute = (item) => {
         @mouseleave="onMouseLeave"
       >
         <div class="menu-item-content">
-          <span v-if="item.icon" :class="['menu-icon', item.icon]"></span>
+          <component v-if="item.icon" :is="item.icon" :size="14"
+                      :fill="item.iconFilled ? 'currentColor' : 'none'" class="menu-icon" />
           <span class="menu-label">{{ item.label }}</span>
-          <i v-if="item.items" class="pi pi-angle-right submenu-arrow"></i>
+          <ChevronRight v-if="item.items" :size="12" class="submenu-arrow" />
         </div>
 
         <div v-if="item.items && activeSubmenu === index" class="submenu-wrapper">
@@ -107,10 +109,9 @@ const execute = (item) => {
 
 .menu-icon {
   margin-right: 10px;
-  font-size: 14px;
   color: var(--color-text-primary, #F2F3F7);
   width: 16px;
-  text-align: center;
+  flex-shrink: 0;
   transition: color var(--duration-fast, 120ms) var(--ease-standard);
 }
 

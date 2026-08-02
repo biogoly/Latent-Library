@@ -104,10 +104,12 @@ const close = () => {
 
 .brand-title {
   font-family: var(--font-sans, Inter, sans-serif);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--color-text-primary, #F2F3F7);
-  letter-spacing: -0.01em;
+  font-size: var(--text-body-lg, 16px);
+  font-weight: var(--weight-bold, 700);
+  background: var(--gradient-brand-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: var(--tracking-tight, -0.01em);
 }
 
 .no-drag {

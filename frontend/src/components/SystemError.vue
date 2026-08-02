@@ -4,7 +4,7 @@
  * @description A fallback screen shown when the backend is unreachable or fails to initialize aligned with the Latent Design System.
  */
 import LButton from '@/components/ds/LButton.vue';
-import { RefreshCw } from 'lucide-vue-next';
+import { RefreshCw, AlertTriangle } from 'lucide-vue-next';
 
 const reload = () => {
   window.location.reload();
@@ -15,7 +15,7 @@ const reload = () => {
   <div
       class="system-error-container flex flex-column align-items-center justify-content-center h-screen p-5 text-center">
     <div class="error-card p-6 border-round-xl max-w-30rem">
-      <i class="pi pi-exclamation-triangle text-6xl text-red-500 mb-4"></i>
+      <AlertTriangle :size="56" class="text-red-500 mb-4" />
       <h1 class="text-3xl font-bold mb-3 text-white">Backend Unreachable</h1>
       <p class="text-gray-400 mb-5 line-height-3">
         The application could not connect to the background service. This usually happens if:

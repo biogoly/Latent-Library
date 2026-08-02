@@ -8,7 +8,7 @@
 - **Frontend:** Vue 3 + Vite + PrimeVue + Pinia (`frontend/`)
 - **Desktop Packaging:** Electron 31 (`electron/`)
 - **Database:** SQLite with Flyway migrations (`data/`)
-- **Active Feature Branch:** `feature/ui-redesign`
+- **Active Branch:** `main` — the UI redesign (previously on `feature/ui-redesign`) is fully merged; that branch has been deleted after its content was confirmed identical to `main`.
 
 ---
 
@@ -259,6 +259,123 @@ or dropped handlers. All fixed and re-verified:
   used as a prefix (`"Backend: Online"`, etc.) combined with the live status.
 
 **Verification**: `npm run build` clean, backend tests 153/153.
+
+### 10. Docs/Packaging Alignment and Git History Cleanup
+
+Two follow-up passes after the redesign merged, unrelated to UI code:
+
+- **Docs vs. actual app audit**: README, CONTRIBUTING.md, BUILDING.md, and packaging metadata
+  (`pom.xml`, `frontend`/`electron` `package.json`) had drifted from reality. Fixed:
+  - `pom.xml` had entirely empty Spring-Initializr-default `<licenses>`/`<developers>`/`<scm>`/`<url>`
+    tags; filled in with real project metadata.
+  - The real project license is **MIT with a Commons Clause condition** (prohibits selling/hosting
+    the software for a fee) — not plain MIT. `pom.xml`'s license name and the `package.json` `license`
+    fields (`SEE LICENSE IN LICENSE`, the correct SPDX convention for a non-standard license) were
+    corrected to match, and README's license line reads "Free for personal use" (not "and commercial").
+  - README and BUILDING.md both described the Windows build as `Latent Library Setup X.X.X.exe`,
+    implying an NSIS installer, but electron-builder's `win.target` is `"portable"` — no installer,
+    contradicting README's own "no installer required" claim elsewhere. Fixed the naming in both docs.
+  - README's "Multi-Theme System" feature bullet and a "Custom Themes" screenshot described a theme
+    picker (Deep Neon/Light/Gold) that no longer exists — `SettingsModal.vue` now shows a static
+    theme-info box for the single unified Latent Design System dark theme. Bullet and screenshot removed.
+  - CONTRIBUTING.md referenced a versioned jar (`backend-1.0.1.jar`) that doesn't match the actual
+    unversioned `finalName` (`backend.jar`); switched to `./mvnw`, added the test command and the
+    stale-JAR-in-standalone-Electron trap from section 8 above.
+  - **Known gap, not fixed**: all 6 README screenshots still show the pre-redesign app under the old
+    "AI Toolbox" branding with the old top-nav layout, not the current Latent Library stacked-sidebar
+    UI. Needs a real running app + curated sample images to recapture — a content decision, not a
+    docs-text fix.
+- **Git history cleanup**: two commits merged into `main` (originally via PR #82, `EnragedAntelope/
+  claude/security-review-Yfv4J`) had their author *and* committer identity literally set to
+  `Claude <noreply@anthropic.com>`, causing "Claude" to show up in GitHub's contributor graph — a
+  direct violation of this repo's own git rule ("no AI attribution anywhere in git"). Reauthored both
+  commits (`82d34c8` "Fix overly broad filename validation in renameFile", `faea92f` "Fix security
+  vulnerabilities found in review") to the human author on `main` and `development` via
+  `git filter-branch --env-filter`, verified byte-identical content before and after (tree diff empty,
+  patch-id match), then force-pushed both branches. Both branches had GitHub repository rulesets
+  blocking force-push/delete that had to be temporarily disabled per-branch before the push would go
+  through. `feature/ui-redesign` was deleted (locally and requested on the remote) after confirming its
+  tip tree was identical to `main`'s.
+
+### 11. Cross-App Design Alignment with Latent Model Organizer
+
+Latent Model Organizer was designated the reference standard for shared Latent DS chrome
+across the three sibling apps (Latent Library, Latent Model Organizer, Latent Tools). This
+pass brought Library's sidebar, titlebar, and iconography in line with it:
+
+- **`Sidebar.vue`**: `.sidebar-ds` background changed from opaque `var(--color-surface-1,
+  #14151B)` to translucent `rgba(14, 15, 19, 0.6)` with `backdrop-filter: var(--blur-glass,
+  blur(20px))` added; hardcoded `width: 240px; min-width: 240px;` replaced with
+  `var(--sidebar-width, 200px)` (the `--sidebar-width` token already existed in
+  `tokens/spacing.css` at `224px`, matching Organizer — no token changes needed). The
+  `FolderNav` scroll region below the nav items was untouched.
+- **`components/ds/Titlebar.vue`**: `.brand-title` switched from a flat `color:
+  var(--color-text-primary)` at 13px to Organizer's treatment — `font-size:
+  var(--text-body-lg, 16px)`, `font-weight: var(--weight-bold, 700)`, gradient text via
+  `background: var(--gradient-brand-text)` + `-webkit-background-clip: text` +
+  `-webkit-text-fill-color: transparent`, `letter-spacing: var(--tracking-tight, -0.01em)`.
+  All tokens already existed in `tokens/colors.css`/`typography.css`.
+- **PrimeIcons → Lucide migration**: the app previously mixed `lucide-vue-next` (main nav)
+  with PrimeIcons (`pi pi-*`) everywhere else — 12 files
+  (`BrowserToolbar.vue`, `CustomContextSubMenu.vue`, `FolderNav.vue`, `ImageSplitViewer.vue`,
+  `MetadataSidebar.vue`, `SettingsModal.vue`, `SingleImageViewer.vue`, `SystemError.vue`,
+  `VirtualGallery.vue`, `main.js`, `CollectionsView.vue`, `ImageBrowserView.vue`). All
+  `pi pi-*` usages replaced with `lucide-vue-next` components; the `primeicons` npm
+  dependency and its stylesheet import (`main.js`) were removed entirely.
+  - PrimeVue `<Button icon="pi pi-x">` string-prop usages were converted to the `#icon`
+    slot (`<Button><template #icon><IconComp :size="16"/></template></Button>`) since
+    PrimeVue's `icon` prop only accepts CSS class strings, not components.
+  - PrimeVue `<Tree>` node icons (`FolderNav.vue`) needed a `#nodeicon` slot added on the
+    `<Tree>` element — PrimeVue only supports component-based node icons through that
+    extension point, otherwise it renders `node.icon` as a raw class string.
+  - The custom recursive `CustomContextSubMenu`/context-menu item schema switched from
+    `icon: 'pi pi-x'` strings to actual component references rendered via
+    `<component :is="item.icon">`, with a separate `iconFilled` boolean added for the one
+    filled-vs-outline case (`pi-bookmark` / `pi-bookmark-fill` → `Bookmark` with
+    `:fill="'currentColor'"` toggled by the flag).
+  - `ConfirmDialog`'s icon (previously passed as a `pi pi-exclamation-triangle` string to
+    `confirm.require()`) moved to a `#icon` slot on `<ConfirmDialog>` in `App.vue`, since
+    there was only one call site.
+  - Added a `.icon-spin` keyframe utility (`animation: spin 1s linear infinite`) for the
+    two `Loader2` replacements of `pi-spin pi-spinner` — no spin utility existed previously.
+  - **Verification**: `grep -rn "pi pi-\|primeicons\|pi-spin" frontend/src` returns zero
+    results; `npm run build` clean (1945 modules, no errors). The build output's
+    `primeicons-*.{svg,woff,eot,woff2,ttf}` font assets are gone, confirming no runtime
+    PrimeIcons dependency remains.
+  - **Not yet done**: `npm install` has not been run to actually remove `primeicons` from
+    `node_modules`/lockfile — only `package.json` was edited.
+
+**Companion changes in sibling repos** (same session, tracked in their own HANDOVER files):
+Latent Model Organizer got the equivalent PrimeIcons → Lucide migration
+(`lucide-vue-next` added as a dependency, matching Library's version). Latent Tools —
+a bundler-less Electron renderer — got its hand-rolled inline SVG icons replaced with
+real Lucide glyphs via the `lucide` UMD bundle loaded as a static script (an ES import
+would break at runtime under its plain-`tsc`/`contextIsolation` setup, so the standard
+`import { createIcons } from 'lucide'` approach doesn't apply there).
+
+### 12. Post-Migration Visual Fixes (found via user screenshots)
+
+Follow-up pass after section 11 landed — the user flagged two visual regressions/
+inconsistencies from a live screenshot comparison against Organizer:
+
+- **Toolbar icons rendered too small**: `BrowserToolbar.vue`'s icon-only nav buttons
+  (Network/Zap/LayoutGrid/Image, the AI-tagger toggle, the metadata-panel toggle) and
+  `MetadataSidebar.vue`'s icon-only action buttons stayed at `:size="16"` after the
+  Lucide migration. PrimeVue forces icon-only buttons into a fixed 2.5rem (40px)
+  square box (`.p-button-icon-only`) regardless of icon size — that box size didn't
+  change, but Lucide's stroke-style glyphs carry more internal whitespace inside their
+  24×24 viewBox than PrimeIcons' font glyphs did at the same nominal size, so visually
+  the icons read noticeably smaller than before even though the migration didn't
+  shrink anything numerically. Bumped `BrowserToolbar.vue`'s six icon-only buttons to
+  `:size="20"` and `MetadataSidebar.vue`'s six icon-only buttons to `:size="18"`.
+  Left the buttons inside explicit `.w-2rem.h-2rem` (32px) boxes (the Copy buttons,
+  star-rating buttons) unchanged — their icon-to-box fill ratio was already
+  proportionate.
+- **Dev-credit logo sized inconsistently across apps**: `.dev-logo-img` here used
+  `max-width: 120px; max-height: 44px`, while both Organizer and Tools use a plain
+  `width: 64px`. Standardized on `width: 64px; height: auto` to match.
+
+**Verification**: `cd frontend && npm run build` clean after each change.
 
 ---
 

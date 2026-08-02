@@ -11,7 +11,7 @@
  * - **App Initialization:** Bootstraps the root `App.vue` component.
  * - **Plugin Registration:** Configures Pinia, Vue Router, and PrimeVue services (Toast, Confirm).
  * - **Global Directives:** Registers custom directives like Tooltip for application-wide use.
- * - **Style Orchestration:** Imports core CSS frameworks (PrimeFlex, PrimeIcons) and
+ * - **Style Orchestration:** Imports core CSS frameworks (PrimeFlex) and
  *   the application's custom theme and layout systems.
  * - **Notification System:** Initializes `vue3-toastify` for standardized global error handling.
  */
@@ -26,7 +26,6 @@ import Vue3Toastify, {toast} from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 
 import 'primevue/resources/themes/aura-dark-green/theme.css'
-import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
 
 import './assets/css/latent/styles.css';

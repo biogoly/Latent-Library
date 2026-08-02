@@ -10,7 +10,7 @@ import { useRouter, useRoute } from 'vue-router';
 import Tree from 'primevue/tree';
 import CustomContextMenu from './CustomContextMenu.vue';
 import { useToast } from 'primevue/usetoast';
-import { Plus } from 'lucide-vue-next';
+import { Plus, Folder, List, Bookmark, Server, Monitor, File, Zap, Trash2 } from 'lucide-vue-next';
 
 const store = useBrowserStore();
 const router = useRouter();
@@ -69,14 +69,14 @@ const loadTree = async () => {
       key: `col-${c.name}`,
       label: c.name,
       data: c.name,
-      icon: 'pi pi-folder',
+      icon: Folder,
       type: 'collection',
       leaf: true
     }));
     rootNodes.push({
       key: 'collections',
       label: 'Collections',
-      icon: 'pi pi-list',
+      icon: List,
       children: colChildren,
       type: 'root',
       leaf: false,
@@ -95,14 +95,14 @@ const loadTree = async () => {
       key: `pinned-${p.path}`,
       label: p.name || p.path,
       data: p,
-      icon: 'pi pi-bookmark',
+      icon: Bookmark,
       type: 'pinned',
       leaf: false
     }));
     rootNodes.push({
       key: 'pinned',
       label: 'Pinned',
-      icon: 'pi pi-bookmark',
+      icon: Bookmark,
       children: pinChildren,
       type: 'root',
       leaf: false,
@@ -121,14 +121,14 @@ const loadTree = async () => {
       key: `drive-${d.path}`,
       label: d.name || d.path,
       data: d,
-      icon: 'pi pi-server',
+      icon: Server,
       type: 'folder',
       leaf: false
     }));
     rootNodes.push({
       key: 'drives',
       label: 'This PC',
-      icon: 'pi pi-desktop',
+      icon: Monitor,
       children: driveChildren,
       type: 'root',
       leaf: false,
@@ -153,7 +153,7 @@ const onNodeExpand = async (event) => {
       key: `${actualNode.key}-${f.name}`,
       label: f.name || f.path,
       data: f,
-      icon: f.isDirectory ? 'pi pi-folder' : 'pi pi-file',
+      icon: f.isDirectory ? Folder : File,
       type: 'folder',
       leaf: !f.isDirectory,
       children: []
@@ -213,7 +213,7 @@ const onCustomContextMenu = (event, node) => {
   const items = [
     {
       label: 'Pin Folder',
-      icon: 'pi pi-bookmark',
+      icon: Bookmark,
       command: async () => {
         if (node.data?.path) {
           await api.post('/folders/pin', null, { params: { path: node.data.path } });
@@ -224,7 +224,8 @@ const onCustomContextMenu = (event, node) => {
     },
     {
       label: 'Unpin Folder',
-      icon: 'pi pi-bookmark-fill',
+      icon: Bookmark,
+      iconFilled: true,
       command: async () => {
         const path = node.data?.path || node.data;
         if (path) {
@@ -236,7 +237,7 @@ const onCustomContextMenu = (event, node) => {
     },
     {
       label: 'Remove Collection',
-      icon: 'pi pi-trash',
+      icon: Trash2,
       command: async () => {
         if (node.data) {
           await api.delete(`/collections/${encodeURIComponent(node.data)}`);
@@ -248,7 +249,7 @@ const onCustomContextMenu = (event, node) => {
     { separator: true },
     {
       label: 'Open in Speed Sorter',
-      icon: 'pi pi-bolt',
+      icon: Zap,
       command: () => {
         if (node.data?.path) {
           router.push({ path: '/speedsorter', query: { folder: node.data.path } });
@@ -294,6 +295,9 @@ onMounted(loadTree);
         @node-select="onNodeSelect"
         class="clean-tree"
       >
+        <template #nodeicon="slotProps">
+          <component v-if="slotProps.node.icon" :is="slotProps.node.icon" :size="13" class="tree-node-icon" />
+        </template>
         <template #default="slotProps">
           <div v-if="slotProps.node.type === 'separator'" class="separator-line"></div>
           <div

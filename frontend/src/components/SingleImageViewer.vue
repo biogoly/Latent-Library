@@ -19,6 +19,7 @@ import {computed, onMounted, onUnmounted, ref, watch} from 'vue';
 import {useBrowserStore} from '@/stores/browser';
 import FilmstripView from '@/components/FilmstripView.vue';
 import {authenticatedUrl} from '@/services/api';
+import {AlertTriangle, ChevronLeft, ChevronRight} from 'lucide-vue-next';
 
 const store = useBrowserStore();
 const viewerContainer = ref(null);
@@ -207,7 +208,7 @@ onUnmounted(() => {
            draggable="false"/>
 
       <div v-if="hasLoadError" class="absolute z-2 flex flex-column align-items-center text-red-400">
-        <i class="pi pi-exclamation-triangle text-4xl mb-2"></i>
+        <AlertTriangle :size="36" class="mb-2" />
         <span>Failed to load image</span>
       </div>
 
@@ -216,12 +217,12 @@ onUnmounted(() => {
       <div
           class="absolute left-0 top-0 bottom-0 w-4rem flex align-items-center justify-content-center nav-arrow-btn cursor-pointer transition-colors transition-duration-200 z-2"
           @click="store.navigate(-1)">
-        <i class="pi pi-chevron-left text-4xl nav-arrow-icon"></i>
+        <ChevronLeft :size="36" class="nav-arrow-icon" />
       </div>
       <div
           class="absolute right-0 top-0 bottom-0 w-4rem flex align-items-center justify-content-center nav-arrow-btn cursor-pointer transition-colors transition-duration-200 z-2"
           @click="store.navigate(1)">
-        <i class="pi pi-chevron-right text-4xl nav-arrow-icon"></i>
+        <ChevronRight :size="36" class="nav-arrow-icon" />
       </div>
     </div>
 

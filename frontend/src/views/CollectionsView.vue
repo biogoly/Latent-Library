@@ -15,7 +15,7 @@ import MultiSelect from 'primevue/multiselect';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
 import CustomContextMenu from '@/components/CustomContextMenu.vue';
-import { Plus, Folder, Bolt, Check, X, FolderOpen } from 'lucide-vue-next';
+import { Plus, Folder, Bolt, Check, X, FolderOpen, Pencil, Trash2 } from 'lucide-vue-next';
 
 const store = useBrowserStore();
 const router = useRouter();
@@ -169,12 +169,12 @@ const onCardContextMenu = (event, collectionName) => {
   menuModel.value = [
     {
       label: 'Edit Collection',
-      icon: 'pi pi-pencil',
+      icon: Pencil,
       command: () => editCollection(collectionName)
     },
     {
       label: 'Delete Collection',
-      icon: 'pi pi-trash',
+      icon: Trash2,
       command: () => confirmDeleteCollection(collectionName)
     }
   ];

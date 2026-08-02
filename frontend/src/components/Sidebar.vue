@@ -108,14 +108,15 @@ const navigateToPath = (path) => {
 
 <style scoped>
 .sidebar-ds {
-  width: 240px;
-  min-width: 240px;
+  width: var(--sidebar-width, 200px);
+  min-width: var(--sidebar-width, 200px);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding: 16px 12px;
   border-right: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.06));
-  background: var(--color-surface-1, #14151B);
+  background: rgba(14, 15, 19, 0.6);
+  backdrop-filter: var(--blur-glass, blur(20px));
   box-shadow: var(--shadow-card, 0 1px 2px rgba(0,0,0,0.4));
   z-index: 20;
 }
@@ -171,9 +172,8 @@ const navigateToPath = (path) => {
 }
 
 .dev-logo-img {
-  max-width: 120px;
+  width: 64px;
   height: auto;
-  max-height: 44px;
   object-fit: contain;
 }
 </style>

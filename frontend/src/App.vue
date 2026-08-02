@@ -10,6 +10,7 @@ import ConfirmDialog from 'primevue/confirmdialog';
 import Titlebar from '@/components/ds/Titlebar.vue';
 import Sidebar from '@/components/Sidebar.vue';
 import SystemError from '@/components/SystemError.vue';
+import { AlertTriangle } from 'lucide-vue-next';
 
 import { useBrowserStore } from '@/stores/browser';
 
@@ -27,7 +28,9 @@ onMounted(() => {
 
   <div v-else class="app-layout">
     <Toast position="bottom-right" />
-    <ConfirmDialog />
+    <ConfirmDialog>
+      <template #icon><AlertTriangle :size="20" /></template>
+    </ConfirmDialog>
 
     <!-- Latent Design System Frameless Titlebar -->
     <Titlebar title="Latent Library" />

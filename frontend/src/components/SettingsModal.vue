@@ -4,6 +4,7 @@
  * @description Settings modal dialog for Latent Library aligned with the Latent Design System.
  */
 import { ref, onMounted } from 'vue';
+import { Settings, Palette, SlidersHorizontal, Database, FolderOpen, RefreshCw, Tag, Trash2, Heart } from 'lucide-vue-next';
 
 const props = defineProps({
   visible: { type: Boolean, required: true },
@@ -35,7 +36,7 @@ const close = () => {
 
       <div class="modal-header-ds">
         <div class="modal-title-group-ds">
-          <i class="pi pi-cog modal-header-icon-ds"></i>
+          <Settings :size="18" class="modal-header-icon-ds" />
           <h2 class="modal-title-ds">Settings</h2>
         </div>
         <button class="win-btn-ds" @click="close" title="Close">
@@ -48,7 +49,7 @@ const close = () => {
         <!-- Theme Info -->
         <section class="modal-section-ds">
           <h3 class="modal-section-title-ds">
-            <i class="pi pi-palette"></i> Appearance
+            <Palette :size="12" /> Appearance
           </h3>
           <div class="theme-info-box-ds">
             <div class="swatch-ds"></div>
@@ -63,7 +64,7 @@ const close = () => {
         <!-- Default Toggles -->
         <section class="modal-section-ds">
           <h3 class="modal-section-title-ds">
-            <i class="pi pi-sliders-h"></i> Scanning & Monitoring
+            <SlidersHorizontal :size="12" /> Scanning & Monitoring
           </h3>
           <div class="toggle-list-ds">
             <div class="toggle-row-ds">
@@ -94,20 +95,20 @@ const close = () => {
         <!-- Data Management -->
         <section class="modal-section-ds">
           <h3 class="modal-section-title-ds">
-            <i class="pi pi-database"></i> Data Management
+            <Database :size="12" /> Data Management
           </h3>
           <div class="action-buttons-grid-ds">
             <button class="action-btn-ds" @click="emit('openDataFolder')">
-              <i class="pi pi-folder-open"></i> Open Data Folder
+              <FolderOpen :size="14" /> Open Data Folder
             </button>
             <button class="action-btn-ds warning" @click="emit('reindex')">
-              <i class="pi pi-refresh"></i> Re-index All
+              <RefreshCw :size="14" /> Re-index All
             </button>
             <button class="action-btn-ds danger" @click="emit('clearTags')">
-              <i class="pi pi-tag"></i> Clear AI Tags
+              <Tag :size="14" /> Clear AI Tags
             </button>
             <button class="action-btn-ds danger" @click="emit('clearDb')">
-              <i class="pi pi-trash"></i> Wipe Database
+              <Trash2 :size="14" /> Wipe Database
             </button>
           </div>
         </section>
@@ -115,7 +116,7 @@ const close = () => {
         <!-- Support Section -->
         <section class="modal-section-ds">
           <h3 class="modal-section-title-ds">
-            <i class="pi pi-heart"></i> Support
+            <Heart :size="12" /> Support
           </h3>
           <button class="kofi-btn-ds" @click="openKofi">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

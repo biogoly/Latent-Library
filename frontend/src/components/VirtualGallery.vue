@@ -17,6 +17,7 @@
 import {ref, computed, onMounted, onUnmounted, watch, nextTick} from 'vue';
 import {useBrowserStore} from '@/stores/browser';
 import ImageCard from '@/components/ImageCard.vue';
+import {Loader2, Images} from 'lucide-vue-next';
 
 const RENDER_WINDOW = 200;
 
@@ -219,13 +220,13 @@ defineExpose({ gridCols });
     </div>
 
     <div ref="observerTarget" class="h-4rem w-full flex align-items-center justify-content-center mt-4">
-      <i v-if="store.isFetchingMore" class="pi pi-spin pi-spinner text-2xl text-gray-500"></i>
+      <Loader2 v-if="store.isFetchingMore" :size="24" class="text-gray-500 icon-spin" />
       <span v-else-if="!store.hasMore && store.files.length > 0" class="text-gray-600 text-sm">End of library</span>
     </div>
 
     <div v-if="store.files.length === 0 && !store.isLoading" class="text-center p-5 text-gray-500 h-full flex align-items-center justify-content-center">
       <div class="flex flex-column align-items-center gap-3">
-        <i class="pi pi-images text-4xl"></i>
+        <Images :size="36" />
         <span>No images found in this folder.</span>
       </div>
     </div>
@@ -250,5 +251,14 @@ defineExpose({ gridCols });
   outline: 2px solid var(--color-accent-primary, #4FD8D0);
   outline-offset: 2px;
   box-shadow: var(--glow-primary, 0 0 0 3px rgba(79, 216, 208, 0.16));
+}
+
+.icon-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>

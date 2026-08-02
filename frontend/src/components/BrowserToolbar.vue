@@ -29,7 +29,7 @@ import InputText from 'primevue/inputtext';
 import Slider from 'primevue/slider';
 import Chip from 'primevue/chip';
 import LSlider from '@/components/ds/LSlider.vue';
-import { ZoomIn } from 'lucide-vue-next';
+import { ZoomIn, Tags, Network, Zap, LayoutGrid, Image, Folder, Search, X, Loader2, CheckCircle2, Info, Star } from 'lucide-vue-next';
 
 import InputSwitch from 'primevue/inputswitch';
 import Dropdown from 'primevue/dropdown';
@@ -75,7 +75,6 @@ const toggleRecursive = () => {
         confirm.require({
             message: 'Enabling recursive view will index and display all images in all subfolders. For large directories, this may take some time. Continue?',
             header: 'Include Subfolders',
-            icon: 'pi pi-exclamation-triangle',
             acceptClass: 'p-button-warning',
             accept: () => {
                 store.toggleRecursiveView();
@@ -96,12 +95,13 @@ onUnmounted(() => {
   <Toolbar class="browser-toolbar-glass border-none p-2">
     <template #start>
         <div class="flex gap-2 align-items-center ml-2">
-            <Button icon="pi pi-tags"
-                    :class="[ store.isTaggerOpen ? 'text-primary' : 'text-secondary' ]"
+            <Button :class="[ store.isTaggerOpen ? 'text-primary' : 'text-secondary' ]"
                     class="p-button-rounded p-button-text"
                     @click="toggleTagger"
                     v-tooltip.bottom="'Toggle Auto-Tagger'"
-                    v-if="store.viewMode === 'browser'"/>
+                    v-if="store.viewMode === 'browser'">
+              <template #icon><Tags :size="20" /></template>
+            </Button>
         </div>
     </template>
 
@@ -123,42 +123,47 @@ onUnmounted(() => {
 
             <div class="flex gap-1 mr-2 align-items-center">
               <div class="flex align-items-center gap-1 mr-2 border-right-1 border-white-alpha-10 pr-2" v-if="store.lastFolderPath">
-                  <Button icon="pi pi-sitemap"
-                          class="p-button-sm nav-btn"
+                  <Button class="p-button-sm nav-btn"
                           :class="{ 'active-nav-btn': store.recursiveView }"
                           v-tooltip.bottom="'Include Subfolders'"
-                          @click="toggleRecursive"/>
-                  <Button icon="pi pi-bolt"
-                          class="p-button-sm nav-btn"
+                          @click="toggleRecursive">
+                    <template #icon><Network :size="20" /></template>
+                  </Button>
+                  <Button class="p-button-sm nav-btn"
                           :class="{ 'active-nav-btn': store.autoShowLatest }"
                           v-tooltip.bottom="'Auto-Show Latest Image'"
-                          @click="store.toggleAutoShowLatest()"/>
+                          @click="store.toggleAutoShowLatest()">
+                    <template #icon><Zap :size="20" /></template>
+                  </Button>
               </div>
 
-              <Button icon="pi pi-th-large"
-                      class="p-button-sm nav-btn"
+              <Button class="p-button-sm nav-btn"
                       :class="{ 'active-nav-btn': store.viewMode === 'gallery' }"
                       @click="store.setViewMode('gallery')"
-                      v-tooltip.bottom="'Gallery View'"/>
-              <Button icon="pi pi-image"
-                      class="p-button-sm nav-btn"
+                      v-tooltip.bottom="'Gallery View'">
+                <template #icon><LayoutGrid :size="20" /></template>
+              </Button>
+              <Button class="p-button-sm nav-btn"
                       :class="{ 'active-nav-btn': store.viewMode === 'browser' }"
                       @click="store.setViewMode('browser')"
-                      v-tooltip.bottom="'Browser View'"/>
+                      v-tooltip.bottom="'Browser View'">
+                <template #icon><Image :size="20" /></template>
+              </Button>
             </div>
 
             <div class="flex align-items-center gap-2 mr-2">
               <Chip v-if="store.activeCollection"
                     :label="store.activeCollection"
-                    icon="pi pi-folder"
                     removable @remove="clearCollection"
-                    class="collection-chip text-xs"/>
+                    class="collection-chip text-xs">
+                <template #icon><Folder :size="12" /></template>
+              </Chip>
 
               <span class="p-input-icon-left p-input-icon-right">
-                  <i class="pi pi-search"/>
+                  <Search :size="14" />
                   <InputText v-model="store.searchQuery" placeholder="Search..." class="p-inputtext-sm w-15rem glass-input"
                              @keyup.enter="onSearch"/>
-                  <i v-if="store.searchQuery" class="pi pi-times cursor-pointer" @click="store.clearSearch()"/>
+                  <X v-if="store.searchQuery" :size="14" class="cursor-pointer" @click="store.clearSearch()" />
               </span>
 
               <div class="flex align-items-center gap-2 ml-2" v-tooltip.bottom="'Include AI Tags in Search'">
@@ -213,9 +218,9 @@ onUnmounted(() => {
                       <span>Any Star Count</span>
                     </div>
                     <div v-else class="flex">
-                      <i v-for="i in 5" :key="i"
-                         class="pi text-sm mr-1"
-                         :class="i <= parseInt(slotProps.option) ? 'pi-star-fill text-yellow-500' : 'pi-star text-500'"></i>
+                      <Star v-for="i in 5" :key="i" :size="14" class="mr-1"
+                            :class="i <= parseInt(slotProps.option) ? 'text-yellow-500' : 'text-500'"
+                            :fill="i <= parseInt(slotProps.option) ? 'currentColor' : 'none'" />
                     </div>
                   </template>
                   <template #value="slotProps">
@@ -224,7 +229,7 @@ onUnmounted(() => {
                     </div>
                     <div v-else-if="slotProps.value" class="flex align-items-center gap-1">
                       <span>{{ slotProps.value }}</span>
-                      <i class="pi pi-star-fill text-yellow-500 text-xs"></i>
+                      <Star :size="12" fill="currentColor" class="text-yellow-500" />
                     </div>
                     <span v-else>
                       {{ slotProps.placeholder }}
@@ -241,20 +246,21 @@ onUnmounted(() => {
       <div class="flex gap-3 align-items-center">
         <!-- Indexing Status Indicator -->
         <div v-if="store.isIndexing" class="flex align-items-center gap-2 text-xs text-primary animate-pulse">
-            <i class="pi pi-spin pi-spinner"></i>
+            <Loader2 :size="14" class="icon-spin" />
             <span>Indexing: {{ store.filesProcessed }} / {{ store.totalFilesToScan }}</span>
         </div>
         <div v-else-if="store.totalFilesToScan > 0" class="flex align-items-center gap-2 text-xs text-green-400">
-            <i class="pi pi-check-circle"></i>
+            <CheckCircle2 :size="14" />
             <span>Indexed: {{ store.totalFilesToScan }} files</span>
         </div>
 
-        <Button icon="pi pi-info-circle"
-                :class="[ store.isSidebarOpen ? 'text-primary' : 'text-secondary' ]"
+        <Button :class="[ store.isSidebarOpen ? 'text-primary' : 'text-secondary' ]"
                 class="p-button-rounded p-button-text"
                 @click="toggleSidebar"
                 v-tooltip.bottom="'Toggle Metadata'"
-                v-if="store.viewMode === 'browser'"/>
+                v-if="store.viewMode === 'browser'">
+          <template #icon><Info :size="20" /></template>
+        </Button>
       </div>
     </template>
   </Toolbar>
@@ -344,6 +350,15 @@ onUnmounted(() => {
 
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.icon-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 </style>
 

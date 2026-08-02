@@ -22,6 +22,7 @@
  *   while maintaining aspect ratios.
  */
 import {ref, onMounted, onUnmounted, computed, watch, nextTick} from 'vue';
+import {MoveHorizontal} from 'lucide-vue-next';
 
 const props = defineProps({
   imageA: {type: String, required: false},
@@ -236,7 +237,7 @@ defineExpose({resetZoom});
         <div
             class="slider-handle absolute top-50 left-50 border-circle flex align-items-center justify-content-center shadow-4"
             style="width: 32px; height: 32px; margin-left: -16px; margin-top: -16px; border-width: 2px;">
-          <i class="pi pi-arrows-h text-white" style="font-size: 14px;"></i>
+          <MoveHorizontal :size="14" class="text-white" />
         </div>
       </div>
     </div>
