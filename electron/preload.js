@@ -14,8 +14,10 @@
  * - **Window Controls:** Exposes methods for the custom title bar to minimize,
  *   maximize, and close the application window.
  * - **External Links:** Allows opening URLs in the user's default browser via IPC.
+ * - **UI Zoom:** Exposes the renderer's Chromium zoom factor for Ctrl+Scroll
+ *   app-scale zooming (webFrame runs directly in the preload context, no IPC needed).
  */
-const {contextBridge, ipcRenderer} = require('electron');
+const {contextBridge, ipcRenderer, webFrame} = require('electron');
 
 // Retrieve the token from the main process via synchronous IPC so it is never
 // exposed in process argv (which is visible to all local users via `ps`).
@@ -33,6 +35,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 contextBridge.exposeInMainWorld('windowAPI', {
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize'),
-    close: () => ipcRenderer.send('window-close')
+    close: () => ipcRenderer.send('window-close'),
+    getZoomFactor: () => webFrame.getZoomFactor(),
+    setZoomFactor: (factor) => webFrame.setZoomFactor(factor)
 });
 

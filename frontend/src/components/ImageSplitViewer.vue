@@ -112,6 +112,7 @@ const updateSlider = (event) => {
 };
 
 const handleWheel = (e) => {
+  if (e.ctrlKey || e.metaKey) return; // Handled by the global UI-scale zoom listener
   if (!props.imageA || !props.imageB || !containerRef.value) return;
   e.preventDefault();
 

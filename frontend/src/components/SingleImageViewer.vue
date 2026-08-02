@@ -90,6 +90,7 @@ watch(mainImageUrl, (newUrl) => {
  * Calculates the new scale and translation to keep the point under the cursor fixed.
  */
 const onWheel = (e) => {
+  if (e.ctrlKey || e.metaKey) return; // Handled by the global UI-scale zoom listener
   e.preventDefault();
   if (!viewerContainer.value) return;
 

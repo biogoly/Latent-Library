@@ -382,6 +382,29 @@ inconsistencies from a live screenshot comparison against Organizer:
 
 **Verification**: `cd frontend && npm run build` clean after each change.
 
+### 13. Ctrl+Scroll UI Zoom (ported from Latent Tools)
+
+Latent Tools already shipped a Ctrl/Cmd+Mouse Wheel app-scale zoom (50%–250%, 5%
+steps, Ctrl+0 to reset) via Electron's `webFrame.setZoomFactor`/`getZoomFactor`. Ported
+the same mechanism here for consistency across all three apps:
+
+- **`electron/preload.js`**: `windowAPI` gained `getZoomFactor()`/`setZoomFactor(factor)`,
+  calling `webFrame` directly (no IPC round-trip needed — `webFrame` is safe to call from
+  the preload context).
+- **`frontend/src/composables/useUiZoom.js`** (new): a `wheel` listener gated on
+  `ctrlKey || metaKey` adjusts zoom by 0.05 per notch, clamped `[0.5, 2.5]`; a `keydown`
+  listener resets to `1.0` on Ctrl/Cmd+0 (skipped while a `TEXTAREA`/`INPUT` is
+  focused, matching Tools' guard). Mounted once from `App.vue` via `useUiZoom()`.
+- **Conflict fix**: `SingleImageViewer.vue`'s `onWheel` and `ImageSplitViewer.vue`'s
+  `handleWheel` (both plain-scroll image zoom, not gated on any modifier key) now bail
+  out early when `ctrlKey`/`metaKey` is held, so Ctrl+wheel over an open image zooms the
+  *app* rather than double-firing both the image zoom and the UI zoom at once — the same
+  guard Latent Tools already has on its own image-preview wheel handler.
+- Zoom is not persisted across restarts, matching Tools' scope (resets to 100% each
+  launch).
+
+**Verification**: `cd frontend && npm run build` clean.
+
 ---
 
 ## Verification & Build Commands

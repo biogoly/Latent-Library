@@ -13,10 +13,13 @@ import SystemError from '@/components/SystemError.vue';
 import { AlertTriangle } from 'lucide-vue-next';
 
 import { useBrowserStore } from '@/stores/browser';
+import { useUiZoom } from '@/composables/useUiZoom';
 
 const router = useRouter();
 const route = useRoute();
 const store = useBrowserStore();
+
+useUiZoom();
 
 onMounted(() => {
   store.initialize();
