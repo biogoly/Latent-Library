@@ -146,6 +146,16 @@ const close = () => {
   color: var(--color-text-primary, #F2F3F7);
 }
 
+.win-btn.min:hover {
+  background: var(--color-warning-bg, rgba(245, 184, 78, 0.12));
+  color: var(--color-warning, #F5B84E);
+}
+
+.win-btn.max:hover {
+  background: var(--color-success-bg, rgba(61, 214, 140, 0.12));
+  color: var(--color-success, #3DD68C);
+}
+
 .win-btn.close:hover {
   background: var(--color-danger, #F2665B);
   color: #FFFFFF;

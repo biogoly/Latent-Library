@@ -31,6 +31,7 @@ const close = () => {
 </script>
 
 <template>
+  <Teleport to="body">
   <div v-if="visible" class="modal-scrim-ds" @click.self="close">
     <div class="modal-box-ds" role="dialog" aria-modal="true">
 
@@ -134,6 +135,7 @@ const close = () => {
       </div>
     </div>
   </div>
+  </Teleport>
 </template>
 
 <style scoped>

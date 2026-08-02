@@ -405,6 +405,33 @@ the same mechanism here for consistency across all three apps:
 
 **Verification**: `cd frontend && npm run build` clean.
 
+### 14. Settings Modal Broken by Sidebar's `backdrop-filter`, Titlebar Hover Colors
+
+Two more fixes from user screenshots:
+
+- **Settings modal rendered as a small panel pinned to the sidebar instead of a
+  centered fullscreen dialog**: `SettingsModal.vue` is declared inside
+  `Sidebar.vue`'s `<aside class="sidebar-ds">`, and that element gained
+  `backdrop-filter: var(--blur-glass)` in section 11 above. Per the CSS spec,
+  `backdrop-filter` (like `filter`/`transform`) establishes a new containing block
+  for descendant `position: fixed` elements — so the modal's `inset: 0` resolved
+  relative to the 200px-wide sidebar instead of the viewport, even though the modal's
+  own CSS was otherwise correct. Organizer doesn't have this bug because its
+  equivalent modal is declared in `App.vue`, a sibling of `Sidebar`, never a
+  descendant of the blurred element. Fixed by wrapping `SettingsModal.vue`'s root in
+  `<Teleport to="body">`, which moves it out of the sidebar's DOM subtree at render
+  time regardless of where it's declared in the component tree — the standard Vue 3
+  fix for this class of bug, and no prop/emit restructuring needed.
+- **Titlebar window-control hover colors**: `Titlebar.vue`'s `.win-btn` only had a
+  distinct hover color for `.close` (danger red); `.min`/`.max` fell back to the
+  generic gray hover. Added `.win-btn.min:hover` (warning/amber) and
+  `.win-btn.max:hover` (success/green), matching Latent Tools' `#win-min:hover`/
+  `#win-max:hover` treatment — all three apps now use the same three-color scheme
+  (amber minimize / green maximize / red close) with tokens that already existed
+  identically in all three repos' `colors.css`.
+
+**Verification**: `cd frontend && npm run build` clean.
+
 ---
 
 ## Verification & Build Commands
