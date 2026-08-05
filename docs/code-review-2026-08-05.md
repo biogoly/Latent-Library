@@ -2,7 +2,7 @@
 
 **Date:** August 5, 2026  
 **Project:** Latent Library  
-**Review Target:** Full Monolith (`backend/`, `frontend/`, `electron/`, `data/`) against [`AGENTS.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/AGENTS.md) and [`HANDOVER.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/HANDOVER.md)  
+**Review Target:** Full Monolith (`backend/`, `frontend/`, `electron/`, `data/`) against [`AGENTS.md`](AGENTS.md) and [`HANDOVER.md`](HANDOVER.md)  
 **Overall Grade:** **A (High Reliability & Architectural Alignment)**
 
 ---
@@ -25,7 +25,7 @@ This code review provides a formal assessment of the **Latent Library** codebase
 
 ## 2. Architectural & Guidelines Compliance Analysis
 
-The codebase was audited against the engineering rules and contracts specified in [`AGENTS.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/AGENTS.md).
+The codebase was audited against the engineering rules and contracts specified in [`AGENTS.md`](AGENTS.md).
 
 ```mermaid
 graph TD
@@ -159,4 +159,4 @@ rendering chunks...
 
 ## 7. Conclusion
 
-The **Latent Library** codebase displays exemplary software architecture and engineering discipline. The separation of concerns between Java/Spring Boot backend services, SQLite persistence with FTS5 search, Vue 3 Pinia frontend state management, and Electron IPC execution strictly complies with the project's [`AGENTS.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/AGENTS.md) guidelines. All recent UI redesign milestones and regression fixes documented in [`HANDOVER.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/HANDOVER.md) have been thoroughly validated and verified.
+The **Latent Library** codebase displays exemplary software architecture and engineering discipline. The separation of concerns between Java/Spring Boot backend services, SQLite persistence with FTS5 search, Vue 3 Pinia frontend state management, and Electron IPC execution strictly complies with the project's [`AGENTS.md`](AGENTS.md) guidelines. All recent UI redesign milestones and regression fixes documented in [`HANDOVER.md`](HANDOVER.md) have been thoroughly validated and verified.

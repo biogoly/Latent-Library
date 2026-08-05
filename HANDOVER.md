@@ -431,10 +431,127 @@ Two more fixes from user screenshots:
 
 Conducted a full-system architectural and code quality audit across `backend/`, `frontend/`, `electron/`, and `data/` against `AGENTS.md` guidelines and recent handover milestones:
 
-- **Formal Code Review Report**: Generated and published [`docs/code-review-2026-08-05.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/docs/code-review-2026-08-05.md) covering backend architecture (Spring Boot 3.3, constructor injection, ArchUnit guardrails), frontend state management & DS tokens, SQLite FTS5 search, and Electron IPC safety.
+- **Formal Code Review Report**: Generated and published [`docs/code-review-2026-08-05.md`](docs/code-review-2026-08-05.md) covering backend architecture (Spring Boot 3.3, constructor injection, ArchUnit guardrails), frontend state management & DS tokens, SQLite FTS5 search, and Electron IPC safety.
 - **Dependency & Lockfile Prune**: Ran `cd frontend && npm install` to prune unreferenced `primeicons` dependencies from `frontend/package-lock.json` following the `lucide-vue-next` migration.
 - **BrowserToolbar Filter Clear Icon Overlay, Click Propagation & Label Flex Fill Fix**: Resolved the root cause of prematurely cropped filter labels in `BrowserToolbar.vue`. PrimeVue applies `.p-inputtext` to `.p-dropdown-label`, which caused global `.p-inputtext` rules to inject a nested inner box (`border`, `background: #23252F`, `padding: 6px 12px`) inside `.p-dropdown`, while legacy `width: 1%` constrained label text calculation to ~40px. Updated `primevue-overrides.css` and `BrowserToolbar.vue` to override `.p-dropdown-label` with `background: transparent; border: none; flex: 1 1 0%; width: 100%; min-width: 0; display: block;`, eliminating the nested box and allowing label text to fill 100% of the available dropdown width cleanly up to `padding-right: 34px`.
 - **Verification**: Executed backend unit suite (`cd backend && ./mvnw test` — 154/154 tests passed) and frontend production build (`cd frontend && npm run build` — 1,946 modules transformed, built clean in 2.06s).
+
+### 16. Collection View Lockup, Disconnected Drives & Terminal Log Streaming Fixes (August 5, 2026)
+
+Addressed end-to-end fixes for Smart Collections, disconnected external drive paths, state synchronization, and developer tooling:
+
+- **Dropdown Clear Icon & Text Truncation (`BrowserToolbar.vue` & `primevue-overrides.css`)**:
+  - Removed wrapping `w-full h-full` span from `#clearicon` slot in `BrowserToolbar.vue` to prevent `.p-dropdown-clear-icon` from expanding to 100% width and centering the clear icon in the middle of dropdown boxes.
+  - Set `.p-dropdown-clear-icon` in `primevue-overrides.css` to `display: inline-flex; width: 14px; height: 14px; right: 20px;`.
+  - Applied `flex: 1 1 0% !important; min-width: 0 !important; width: 100% !important; padding-right: 34px !important;` to `.p-dropdown-label`, allowing long text filter selections to fill the dropdown width cleanly up to `34px`.
+- **Non-Existent File Filtering & SQL Missing Constraints (`UserDataManager.java`, `SearchRepository.java`, `CollectionRepository.java`)**:
+  - Added explicit `if (file == null || !file.exists()) return null;` checks to `UserDataManager.findFilesWithFilters()` and `MetadataService.java`, preventing disk I/O timeouts and thread pool starvation when loading collections containing missing/unmounted drive paths (`D:\...`).
+  - Added `COALESCE(i.is_missing, 0) = 0` to `SearchRepository.findPaths()` and `CollectionRepository.getFilePaths()`, excluding disconnected files (`is_missing = 1`) from search results and Smart Collection auto-population.
+  - Updated `CollectionService.getPreviewPaths()` for Smart Collections to query `SearchRepository.findPaths()` directly (`limit 4`), rendering 4 clean preview thumbnails dynamically without database locking.
+- **Smart Collection Search Population & Navigation State Reset (`UserDataManager.java`, `Sidebar.vue`, `CollectionsView.vue`)**:
+  - Added explicit `collectionService.getFilePathsFromCollection(collectionName)` invocation in `UserDataManager.findFilesWithFilters()` before calling `SearchRepository.findPaths()`, populating `collection_images` dynamically when querying Smart Collections via API.
+  - Fixed `navigateToPath('/')` in `Sidebar.vue` to reset `store.activeCollection = null` and clear search queries whenever **Gallery** (`/`) is clicked from any view, eliminating state locking across view transitions.
+  - Updated `navigateToCollection` in `CollectionsView.vue` to call `store.loadCollection(name)` before routing.
+- **Electron Live Log Pipelining (`electron/main.js` & `logback-spring.xml`)**:
+  - Added `process.stdout.write(`[Backend]: ${msg}`);` to `backendProcess.stdout.on('data')` in `electron/main.js`, streaming real-time Spring Boot SLF4J logs directly into IntelliJ's **3. Run Electron App** terminal console window.
+  - Changed `<logger name="com.nilsson" level="INFO"/>` in `logback-spring.xml` to reduce debug log noise.
+- **Verification**: Ran full backend test suite (`cd backend && ./mvnw test` — 154/154 tests passed), rebuilt backend archive (`cd backend && ./mvnw clean package -DskipTests`), and built frontend production bundle (`cd frontend && npm run build` — clean build in 1.81s).
+
+### 17. Collections View Blanked by Unreadable Files — Root Cause & Fix (August 5, 2026)
+
+Reported symptom: clicking a pinned folder containing missing/disconnected files left the
+Collections view empty (no cards at all), and the app felt frozen. The earlier §16 work had
+guessed at the backend collection queries; the actual cause was elsewhere and is now fixed.
+
+- **Root cause — `File.exists()` was treated as proof a file is readable.**
+  `ImageController.getImageContent` and `getThumbnail` guarded only on `!file.exists()`.
+  `exists()` is a stat; it does not prove the bytes can be read. For entries where the stat
+  succeeds but the open fails — directories, permission-denied files, and the "ghost" entries
+  seen on a secondary drive in the reporter's library (where `File.exists()` and `File.length()`
+  return `true` and a plausible size while `Files.newInputStream` throws `FileNotFoundException`
+  and `Files.list` throws `NoSuchFileException`) — Spring committed a `200 OK` with a `Content-Length` from
+  `file.length()` **before** streaming the body. The body then never arrived; the response was
+  already committed so no error could be sent, and the connection hung until the client gave up.
+  Measured live: `time_starttransfer` 3 ms, `time_total` **60.4 s**, `size_download` **0**.
+- **Why Collections went blank.** Browsers cap concurrent connections per origin (6 in Chrome).
+  A folder of 26 such files saturated all of them with permanently-pending
+  `/api/images/thumbnail` requests, and the `indexing-status` poller queued behind them. Every
+  later XHR was starved — a network trace across the repro shows **`GET /api/collections` is
+  never issued at all**. `CollectionsView.fetchCollections()` therefore never resolved and
+  `collections` stayed `[]`, rendering an empty grid. The backend was healthy the whole time
+  (`/api/collections` answered 200 in 0.2 s from curl at every stage); this was never a backend
+  collections bug.
+- **Fix (`ImageController`)**: new private `requireReadableFile(File, String)` replaces the
+  `!file.exists()` guards on both `/content` and `/thumbnail`. It requires `isFile()` and then
+  actually opens the file (`Files.newInputStream`, the same syscall the body write would make),
+  throwing `ResourceNotFoundException` on failure — so the request 404s in milliseconds instead
+  of committing a 200 it cannot fulfil. Verified live: the ghost-file thumbnail went from
+  **60.4 s / 200 / 0 bytes → 7 ms / 404**, `/content` → 3 ms / 404, and a healthy `C:` thumbnail
+  still returns 200 with 95,025 bytes in 107 ms.
+- **Regression tests** (`ImageControllerTest`, +3): a `@TempDir` directory reproduces the same
+  stat-ok/open-fails shape portably and deterministically (confirmed to hang identically against
+  the live server before the fix). Both endpoints now assert 404, plus a positive test that a
+  genuinely readable file still returns 200. Both new 404 tests fail with `expected:<404> but
+  was:<200>` before the fix and pass after.
+- **Verification**: `./mvnw test` — **157/157 passed** (was 154). Jar rebuilt
+  (`./mvnw clean package -DskipTests`) and the full UI repro replayed in a browser against the
+  running app: visiting the affected folder now fails fast with "Failed to load image" instead of
+  freezing, and Collections subsequently renders all six collections with previews.
+
+Three further defects surfaced by the same investigation were fixed in a follow-up pass — see §18.
+
+### 18. Watcher Leak, Tooltip Crashes & Silent Thumbnail Failures (August 5, 2026)
+
+Follow-up to §17, fixing the three secondary bugs that investigation uncovered.
+
+- **Leaked folder watchers (`IndexingService`)** — a thread dump showed **64
+  `FileSystemWatchService` threads out of 122 total**, two per visited folder. Two independent
+  causes, both fixed:
+  1. `watchLoop`'s `catch (Exception e)` also caught the `InterruptedException` thrown by
+     `watchService.take()` when `stopWatching()` interrupts. **`InterruptedException` clears the
+     thread's interrupt flag**, so the `while (!Thread.currentThread().isInterrupted())` guard
+     saw a live thread, fell through, rebuilt a fresh `WatchService` and ran forever — one leaked
+     watcher (and one leaked `WatchService`) per folder navigation. The resurrected thread also
+     overwrote the shared `watchService` field, so a later `stopWatching()` closed the wrong one.
+     Now `InterruptedException` restores the flag and breaks, `ClosedWatchServiceException` breaks
+     (it *is* the stop signal), and only genuine I/O errors take the retry path — which now logs
+     at `WARN` instead of retrying silently.
+  2. `startWatching`/`stopWatching` were unsynchronised while overlapping `/library/scan` calls
+     invoke them concurrently (the UI reliably fires two scans per navigation — visible as the
+     duplicated `Indexing folder:` log lines). Interleaved stop/start could publish two watchers
+     while only the last was recorded in `watchThread`, so the other was never interrupted. Both
+     methods are now `synchronized`.
+  - **Regression tests** (`IndexingServiceTest`, +2): both assert *behaviourally* that no watcher
+    survives `stopWatching()` — a file created afterwards must not reach the listener. Virtual
+    threads are invisible to `Thread.getAllStackTraces()`, so counting threads is not an option.
+    One test covers repeated sequential `startWatching`, the other 8 concurrent calls. Both fail
+    before the fix and pass after.
+  - **Verified live**: 6 repeated scans of one folder now leave **exactly 1** `Folder-Watcher`
+    thread (total process threads 122 → 51), and watching still functions.
+- **PrimeVue tooltip crashes (`BrowserToolbar.vue`)** — the renderer logged a flood of
+  `TypeError: Cannot read/set properties of null (reading '$_ptooltipModifiers')` on every view
+  transition, four at a time. Cause: PrimeVue's Tooltip resolves its target via
+  `getTarget(el) => hasClass(el, 'p-inputwrapper') ? findSingle(el, 'input') : el`. A `Dropdown`
+  root carries `p-inputwrapper`, but a **non-editable, non-filter** Dropdown renders a
+  `<span class="p-dropdown-label">` and contains no `<input>` — so `findSingle` returns `null`
+  and every `beforeMount`/`updated`/`unmounted` hook threw. The four errors were the four filter
+  dropdowns (Model, Sampler, LoRA, Stars). Fixed by moving `v-tooltip.bottom` from each
+  `<Dropdown>` onto its existing plain wrapper `<div>`; tooltips still work and the directive now
+  has a real element to bind. The other `v-tooltip` call sites are on `<Button>`/`<div>`, which
+  are never `p-inputwrapper`, and were left alone.
+  - **Verified live**: after replaying the full navigation sequence, zero `$_ptooltipModifiers`
+    errors remain in the console (the only entries left come from an unrelated browser extension).
+- **`ThumbnailService` swallowed failures** — generation errors were logged at `logger.trace`,
+  which is why nothing in the logs pointed at the unreadable files behind §17. Raised to `WARN`
+  with the full path and exception, and the outer `future.get(15s)` no longer catches everything
+  into a bare `return null`: a `TimeoutException` now logs the 15 s timeout explicitly and
+  `InterruptedException` restores the interrupt flag.
+  - **Verified live**: requesting a thumbnail for a deliberately corrupt PNG now logs
+    `WARN ... Thumbnail generation failed for <path>: UnsupportedFormatException: No suitable
+    ImageReader found`, where previously it was silent.
+
+**Verification**: `./mvnw test` — **159/159 passed** (was 157); `npm run build` clean; jar rebuilt
+and all three fixes confirmed against the running app.
 
 ---
 
