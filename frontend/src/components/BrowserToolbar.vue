@@ -368,6 +368,10 @@ onUnmounted(() => {
     border: none !important;
     box-shadow: none !important;
     color: var(--color-text-primary, #F2F3F7) !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
 }
 
 @keyframes pulse {

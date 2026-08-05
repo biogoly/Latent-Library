@@ -143,10 +143,12 @@
     font-family: var(--font-sans, Inter, sans-serif) !important;
     font-size: 12px !important;
     font-weight: 500 !important;
-    padding: 0 22px 0 10px !important;
+    padding: 0 22px 0 8px !important;
     line-height: 30px !important;
-    flex: 1 1 auto !important;
-    width: 1% !important;
+    flex: 1 1 0% !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    display: block !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
