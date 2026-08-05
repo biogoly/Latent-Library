@@ -6,6 +6,7 @@ import com.nilsson.backend.service.ThumbnailService;
 import com.nilsson.backend.service.UserDataManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -112,6 +113,42 @@ class ImageControllerTest {
         mockMvc.perform(get("/api/images/metadata")
                         .param("path", "missing.png"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /api/images/content should return 404 when the entry exists but cannot be opened")
+    void getImageContent_StatOkButUnreadable_ShouldReturn404(@TempDir Path tempDir) throws Exception {
+        // A directory stats as existing but cannot be opened for reading - the same shape as the
+        // "ghost" entries seen on disconnected/offline drives, where exists() and length() succeed
+        // but opening the file fails. Serving these committed a 200 with a Content-Length whose body
+        // never arrived, hanging the connection until the client timed out.
+        when(pathService.resolve(anyString())).thenReturn(tempDir.toFile());
+
+        mockMvc.perform(get("/api/images/content")
+                        .param("path", tempDir.toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /api/images/thumbnail should return 404 when the entry exists but cannot be opened")
+    void getThumbnail_StatOkButUnreadable_ShouldReturn404(@TempDir Path tempDir) throws Exception {
+        when(pathService.resolve(anyString())).thenReturn(tempDir.toFile());
+
+        mockMvc.perform(get("/api/images/thumbnail")
+                        .param("path", tempDir.toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /api/images/content should still serve a genuinely readable file")
+    void getImageContent_ReadableFile_ShouldReturnOk(@TempDir Path tempDir) throws Exception {
+        Path image = tempDir.resolve("real.png");
+        Files.write(image, new byte[]{1, 2, 3, 4});
+        when(pathService.resolve(anyString())).thenReturn(image.toFile());
+
+        mockMvc.perform(get("/api/images/content")
+                        .param("path", image.toString()))
+                .andExpect(status().isOk());
     }
 
     @Test

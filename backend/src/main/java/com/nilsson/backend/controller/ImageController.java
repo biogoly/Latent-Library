@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -177,10 +178,7 @@ public class ImageController {
     public ResponseEntity<Resource> getImageContent(@RequestParam String path) {
         validatePath(path);
         File file = pathService.resolve(path);
-
-        if (!file.exists()) {
-            throw new ResourceNotFoundException("Image", path);
-        }
+        requireReadableFile(file, path);
 
         try {
             Resource resource = new UrlResource(file.toURI());
@@ -207,10 +205,7 @@ public class ImageController {
     public ResponseEntity<Resource> getThumbnail(@RequestParam String path) {
         validatePath(path);
         File file = pathService.resolve(path);
-
-        if (!file.exists()) {
-            throw new ResourceNotFoundException("Image", path);
-        }
+        requireReadableFile(file, path);
 
         File thumbnail = thumbnailService.getThumbnail(file);
 
@@ -234,6 +229,30 @@ public class ImageController {
     private void validatePath(String path) {
         if (!StringUtils.hasText(path)) {
             throw new ValidationException("Path parameter cannot be empty.");
+        }
+    }
+
+    /**
+     * Verifies that the file can actually be opened before any response is committed.
+     * <p>
+     * {@link File#exists()} only stats the entry, which is not proof that its bytes can be read:
+     * directories, permission-denied files and the "ghost" entries left behind by disconnected or
+     * offline drives all stat successfully while the open fails. Because the body of an image
+     * response is streamed lazily, such a file produced a {@code 200} with a {@code Content-Length}
+     * taken from {@link File#length()} and an empty body — the response was already committed, so no
+     * error could be sent and the connection hung until the client timed out. Browsers cap
+     * concurrent connections per origin, so a folder full of these starved every other API call.
+     *
+     * @throws ResourceNotFoundException if the path is not a regular file or cannot be opened.
+     */
+    private void requireReadableFile(File file, String path) {
+        if (!file.isFile()) {
+            throw new ResourceNotFoundException("Image", path);
+        }
+        try (InputStream ignored = Files.newInputStream(file.toPath())) {
+            // Opening is the same syscall the body write would make; failing here fails fast.
+        } catch (IOException e) {
+            throw new ResourceNotFoundException("Image", path);
         }
     }
 }
