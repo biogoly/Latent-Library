@@ -582,10 +582,30 @@ rather than as a statement about the file.
 folder render the placeholder consistently in both grid and filmstrip, collection previews are
 unaffected, and a healthy folder still loads every real thumbnail with **no false positives**.
 
-**Known issue, not fixed here**: `ImageCard.vue` still renders its star rating with PrimeIcons
-classes (`pi pi-star-fill` / `pi pi-star`). The `primeicons` package and its stylesheet were removed
-in §11, so those stars currently render as nothing. Out of scope for this change but worth a
-follow-up — §11's "grep returns zero results" claim missed this file.
+### 20. Complete the PrimeIcons Removal - Star Ratings (August 5, 2026)
+
+§11 migrated the app from PrimeIcons to `lucide-vue-next` and reported "grep returns zero results",
+but the grep pattern missed star ratings written as a bare `class="pi text-xs"` plus a *bound*
+`:class` supplying `pi-star-fill` / `pi-star`. The `pi-*` fragments never appeared next to the
+literal string `pi pi-`, so they survived the sweep. With `primeicons` and its stylesheet gone since
+§11, **these stars rendered as nothing** — rated images showed no rating at all.
+
+Two files were affected, not one:
+- `ImageCard.vue` (gallery card overlay) — now `<Star :size="11">`, matching the 0.7rem it replaced.
+- `ComparisonMetadataPanel.vue` (side-by-side compare panel) — now `<Star :size="12">`.
+
+Both follow the pattern already established in `MetadataSidebar.vue` / `BrowserToolbar.vue`:
+`:fill="filled ? 'currentColor' : 'none'"` with the colour supplied via `:class`, so a filled star
+is solid and an empty one is an outline. Existing `.text-warning` / `.text-secondary` /
+`.text-yellow-500` rules already resolved to the DS tokens and were reused unchanged.
+
+`grep -rn "pi pi-\|pi-star\|primeicons" frontend/src` now genuinely returns zero.
+
+**Verification**: `npm run build` clean; jar rebuilt; verified live in the gallery grid — the one
+3-star image in the test library renders 3 filled amber stars and 2 outlines. The Comparator panel's
+stars were **not** visually confirmed: populating it needs a native file dialog, which cannot be
+driven from an automated browser session. It compiles, imports `Star`, and uses the identical
+verified pattern with colour classes defined in its own scoped styles.
 
 ---
 

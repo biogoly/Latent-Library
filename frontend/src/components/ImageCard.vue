@@ -19,6 +19,7 @@ import {computed, ref, watch} from 'vue';
 import Card from 'primevue/card';
 import {authenticatedUrl} from '@/services/api';
 import MissingFileThumb from '@/components/ds/MissingFileThumb.vue';
+import {Star} from 'lucide-vue-next';
 
 const props = defineProps({
   file: {
@@ -69,10 +70,9 @@ const onRightClick = (event) => {
 
           <div class="absolute bottom-0 left-0 w-full p-2 glass-overlay flex flex-column gap-1" style="z-index: 2;">
             <div class="flex gap-1" v-if="file.rating > 0">
-              <i v-for="i in 5" :key="i"
-                 class="pi text-xs"
-                 :class="i <= file.rating ? 'pi-star-fill text-yellow-500' : 'pi-star text-white-alpha-30'"
-                 style="font-size: 0.7rem"></i>
+              <Star v-for="i in 5" :key="i" :size="11"
+                    :class="i <= file.rating ? 'text-yellow-500' : 'text-white-alpha-30'"
+                    :fill="i <= file.rating ? 'currentColor' : 'none'" />
             </div>
 
             <div v-if="file.model"

@@ -7,7 +7,7 @@ import { computed } from 'vue';
 import InputText from 'primevue/inputtext';
 import LButton from '@/components/ds/LButton.vue';
 import api from '@/services/api';
-import { Folder, Check } from 'lucide-vue-next';
+import { Folder, Check, Star } from 'lucide-vue-next';
 
 const props = defineProps({
   metadata: { type: Object, required: false },
@@ -59,12 +59,13 @@ const openFileLocation = async () => {
       </div>
 
       <div class="flex gap-1 mb-3">
-        <i
+        <Star
           v-for="i in 5"
           :key="i"
-          class="pi text-xs"
-          :class="i <= (rating || metadata.rating || 0) ? 'pi-star-fill text-warning' : 'pi-star text-secondary'"
-        ></i>
+          :size="12"
+          :class="i <= (rating || metadata.rating || 0) ? 'text-warning' : 'text-secondary'"
+          :fill="i <= (rating || metadata.rating || 0) ? 'currentColor' : 'none'"
+        />
       </div>
 
       <div class="metadata-grid grid grid-nogutter gap-2 mb-3">
