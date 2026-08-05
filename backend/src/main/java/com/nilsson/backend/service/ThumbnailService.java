@@ -110,7 +110,11 @@ public class ThumbnailService {
                             }
                         }
                     } catch (Exception e) {
-                        logger.trace("Thumbnail generation failed for {}: {}", sourceFile.getName(), e.getMessage());
+                        // Logged at WARN: a failure here is invisible to the caller (getThumbnail
+                        // just returns null and the controller falls back to the full image), so
+                        // silently swallowing it hid genuinely unreadable source files.
+                        logger.warn("Thumbnail generation failed for {}: {}",
+                                sourceFile.getAbsolutePath(), e.toString());
                     } finally {
                         lock.unlock();
                     }
@@ -125,7 +129,14 @@ public class ThumbnailService {
 
         try {
             return future.get(15, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            logger.warn("Thumbnail generation timed out after 15s for {}", sourceFile.getAbsolutePath());
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         } catch (Exception e) {
+            logger.warn("Thumbnail retrieval failed for {}: {}", sourceFile.getAbsolutePath(), e.toString());
             return null;
         }
     }
