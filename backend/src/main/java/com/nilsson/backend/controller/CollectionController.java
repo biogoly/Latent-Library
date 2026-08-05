@@ -54,14 +54,29 @@ public class CollectionController {
     public ResponseEntity<List<CollectionDTO>> getAllCollections() {
         List<String> names = dataManager.getCollections();
         List<CollectionDTO> dtos = names.stream().map(name -> {
-            CreateCollectionRequest details = dataManager.getCollectionDetails(name).orElseThrow();
-            List<String> previews = dataManager.getFilesFromCollection(name).stream()
-                    .limit(4)
-                    .map(pathService::getNormalizedAbsolutePath)
-                    .collect(Collectors.toList());
-            return new CollectionDTO(name, details.isSmart(), previews);
+            CreateCollectionRequest details = dataManager.getCollectionDetails(name).orElse(null);
+            boolean isSmart = details != null && details.isSmart();
+
+            List<String> previews = java.util.Collections.emptyList();
+            try {
+                previews = dataManager.getPreviewFilesFromCollection(name).stream()
+                        .map(f -> {
+                            try {
+                                return pathService.getNormalizedAbsolutePath(f);
+                            } catch (Exception e) {
+                                return f.getAbsolutePath();
+                            }
+                        })
+                        .filter(p -> p != null && !p.isBlank())
+                        .collect(Collectors.toList());
+            } catch (Exception e) {
+                org.slf4j.LoggerFactory.getLogger(CollectionController.class)
+                        .warn("Failed to generate preview for collection {}: {}", name, e.getMessage());
+            }
+
+            return new CollectionDTO(name, isSmart, previews);
         }).collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(dtos);
     }
 

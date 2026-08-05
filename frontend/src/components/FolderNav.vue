@@ -172,10 +172,7 @@ const navigateToNode = (node) => {
 
   if (node.type === 'collection') {
     const collectionName = node.data;
-    store.loadCollection(collectionName);
-    if (router.currentRoute.value.path !== '/') {
-      router.push('/');
-    }
+    router.push({ path: '/', query: { collection: collectionName } });
   } else if (node.data?.path) {
     const path = node.data.path;
     store.loadFolder(path);

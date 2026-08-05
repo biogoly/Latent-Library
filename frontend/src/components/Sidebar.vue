@@ -35,6 +35,15 @@ const isNavActive = (path) => {
 };
 
 const navigateToPath = (path) => {
+  if (path === '/') {
+    store.activeCollection = null;
+    store.searchQuery = '';
+    if (store.lastFolderPath) {
+      store.loadFolder(store.lastFolderPath);
+    } else {
+      store.fetchPage();
+    }
+  }
   router.push(path);
 };
 </script>

@@ -160,8 +160,8 @@ const fetchCollections = async () => {
 };
 
 const navigateToCollection = (name) => {
-  store.setActiveCollection(name);
-  router.push('/');
+  store.loadCollection(name);
+  router.push({ path: '/', query: { collection: name } });
 };
 
 const onCardContextMenu = (event, collectionName) => {
@@ -197,6 +197,7 @@ const getThumbnailUrl = (path) => {
 };
 
 onMounted(() => {
+  store.activeCollection = null;
   fetchCollections();
   if (store.availableModels.length === 0) {
     store.loadFilters();

@@ -232,19 +232,35 @@ public class UserDataManager {
                     }
                 }
 
+                if (collectionName != null && !collectionName.isBlank()) {
+                    try {
+                        collectionService.getFilePathsFromCollection(collectionName);
+                    } catch (Exception e) {
+                        log.warn("Failed to populate collection {}: {}", collectionName, e.getMessage());
+                    }
+                }
+
                 List<String> paths = searchRepository.findPaths(query, listFilters, collectionName, offset, limit);
 
                 return paths.stream()
                         .map(path -> {
-                            File file = pathService.resolve(path);
-                            int rating = getRating(file);
-                            String model = "";
-                            if (hasCachedMetadata(file)) {
-                                Map<String, String> meta = getCachedMetadata(file);
-                                model = meta.getOrDefault("Model", "");
+                            try {
+                                File file = pathService.resolve(path);
+                                if (file == null || !file.exists()) {
+                                    return null;
+                                }
+                                int rating = getRating(file);
+                                String model = "";
+                                if (hasCachedMetadata(file)) {
+                                    Map<String, String> meta = getCachedMetadata(file);
+                                    model = meta.getOrDefault("Model", meta.getOrDefault("model", ""));
+                                }
+                                return new ImageDTO(pathService.getNormalizedAbsolutePath(file), rating, model);
+                            } catch (Exception e) {
+                                return null;
                             }
-                            return new ImageDTO(pathService.getNormalizedAbsolutePath(file), rating, model);
                         })
+                        .filter(java.util.Objects::nonNull)
                         .collect(Collectors.toList());
             } catch (Exception e) {
                 log.error("Async search filter operation failed", e);
@@ -536,6 +552,14 @@ public class UserDataManager {
         if (!ids.isEmpty()) {
             collectionService.blacklistImagesFromCollection(collectionName, ids);
         }
+    }
+
+    public List<File> getPreviewFilesFromCollection(String collectionName) {
+        return collectionService.getPreviewPaths(collectionName).stream()
+                .limit(4)
+                .map(pathService::resolve)
+                .filter(f -> f != null && f.exists())
+                .collect(Collectors.toList());
     }
 
     public List<File> getFilesFromCollection(String collectionName) {

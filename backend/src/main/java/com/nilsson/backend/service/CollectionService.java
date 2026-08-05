@@ -191,6 +191,26 @@ public class CollectionService {
         collectionRepository.addExclusions(collectionName, imageIds);
     }
 
+    public List<String> getPreviewPaths(String collectionName) {
+        if (collectionName == null || collectionName.isBlank()) {
+            return List.of();
+        }
+        Optional<CreateCollectionRequest> details = collectionRepository.get(collectionName);
+        if (details.isPresent() && details.get().isSmart()) {
+            CreateCollectionRequest.CollectionFilters f = details.get().filters();
+            Map<String, List<String>> searchFilters = new HashMap<>();
+            if (f != null) {
+                if (f.models() != null && !f.models().isEmpty()) searchFilters.put("Model", f.models());
+                if (f.samplers() != null && !f.samplers().isEmpty()) searchFilters.put("Sampler", f.samplers());
+                if (f.loras() != null && !f.loras().isEmpty()) searchFilters.put("Loras", f.loras());
+                if (f.rating() != null && !f.rating().isBlank()) searchFilters.put("Rating", List.of(f.rating()));
+            }
+            String query = (f != null && f.prompt() != null && !f.prompt().isEmpty()) ? String.join(" ", f.prompt()) : null;
+            return searchRepository.findPaths(query, searchFilters, null, 0, 4);
+        }
+        return collectionRepository.getFilePaths(collectionName);
+    }
+
     @Transactional
     public List<String> getFilePathsFromCollection(String collectionName) {
         if (collectionName == null || collectionName.isBlank()) {

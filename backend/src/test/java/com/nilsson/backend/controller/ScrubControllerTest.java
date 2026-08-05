@@ -39,8 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  *   reported with appropriate HTTP status codes.</li>
  * </ul>
  */
-@SpringBootTest
-@AutoConfigureMockMvc
+@org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest(ScrubController.class)
 @ActiveProfiles("test")
 class ScrubControllerTest {
 

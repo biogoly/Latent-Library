@@ -33,6 +33,6 @@
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.springframework" level="INFO"/>
 
-    <logger name="com.nilsson" level="DEBUG"/>
+    <logger name="com.nilsson" level="INFO"/>
 
 </configuration>

@@ -171,6 +171,7 @@ function startBackend() {
 
         backendProcess.stdout.on('data', (data) => {
             const msg = data.toString();
+            process.stdout.write(`[Backend]: ${msg}`);
             if (logStream) logStream.write(`[Backend]: ${msg}`);
         });
 

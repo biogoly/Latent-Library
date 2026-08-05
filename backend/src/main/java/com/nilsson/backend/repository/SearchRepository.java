@@ -97,10 +97,10 @@ public class SearchRepository {
         }
 
         if (!ftsClauses.isEmpty()) {
-            sql.append("JOIN metadata_fts fts ON i.id = fts.image_id WHERE metadata_fts MATCH ? ");
+            sql.append("JOIN metadata_fts fts ON i.id = fts.image_id WHERE metadata_fts MATCH ? AND COALESCE(i.is_missing, 0) = 0 ");
             params.add(String.join(" AND ", ftsClauses));
         } else {
-            sql.append("WHERE 1=1 ");
+            sql.append("WHERE COALESCE(i.is_missing, 0) = 0 ");
         }
 
         if (collectionName != null && !collectionName.isBlank()) {

@@ -236,6 +236,7 @@ public class CollectionRepository {
                     JOIN collection_images ci ON i.id = ci.image_id 
                     JOIN collections c ON ci.collection_id = c.id 
                     WHERE c.name = ? 
+                    AND COALESCE(i.is_missing, 0) = 0
                     AND i.id NOT IN (
                         SELECT ce.image_id 
                         FROM collection_exclusions ce 

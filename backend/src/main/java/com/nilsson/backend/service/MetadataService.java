@@ -121,6 +121,7 @@ public class MetadataService {
     }
 
     private void extractPhysicalDimensions(File file, Map<String, String> results) {
+        if (file == null || !file.exists()) return;
         int width = 0;
         int height = 0;
 
@@ -171,8 +172,8 @@ public class MetadataService {
     }
 
     private String findBestMetadataChunk(File file) {
-        if (file == null) {
-            throw new ValidationException("File parameter cannot be null.");
+        if (file == null || !file.exists()) {
+            return null;
         }
 
         List<String> candidates = new ArrayList<>();

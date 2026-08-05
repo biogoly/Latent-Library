@@ -176,7 +176,7 @@
     transform: translateY(-50%) !important;
     color: var(--color-text-secondary, #9294A3) !important;
     cursor: pointer !important;
-    display: flex !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     width: 14px !important;
