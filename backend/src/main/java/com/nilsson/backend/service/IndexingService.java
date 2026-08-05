@@ -249,7 +249,15 @@ public class IndexingService {
         executor.submit(task);
     }
 
-    public void startWatching(File directory, Consumer<FileChangeEvent> listener) {
+    /**
+     * Starts watching a directory, replacing any watcher already running.
+     * <p>
+     * Synchronized with {@link #stopWatching()} because overlapping folder scans call this
+     * concurrently: interleaved stop/start calls could otherwise publish two watchers while only
+     * the last one was recorded in {@code watchThread}, leaving the other running for the lifetime
+     * of the process.
+     */
+    public synchronized void startWatching(File directory, Consumer<FileChangeEvent> listener) {
         stopWatching();
         if (directory == null || !directory.exists() || !directory.isDirectory()) return;
 
@@ -258,7 +266,7 @@ public class IndexingService {
                 .start(() -> watchLoop(directory, listener));
     }
 
-    public void stopWatching() {
+    public synchronized void stopWatching() {
         if (watchThread != null) {
             watchThread.interrupt();
             watchThread = null;
@@ -308,11 +316,23 @@ public class IndexingService {
                     }, debounceDelayMs, TimeUnit.MILLISECONDS);
                 }
                 if (!key.reset()) break;
+            } catch (InterruptedException e) {
+                // take() throwing InterruptedException CLEARS the interrupt flag, so the loop
+                // condition alone would not see the stop request and the watcher would rebuild its
+                // WatchService and run forever. Restore the flag and terminate.
+                Thread.currentThread().interrupt();
+                break;
+            } catch (ClosedWatchServiceException e) {
+                // stopWatching() closed the service underneath us - that is the stop signal.
+                break;
             } catch (Exception e) {
+                logger.warn("Folder watch on {} failed, retrying in {}ms: {}",
+                        directory.getName(), watchRetryDelayMs, e.toString());
                 closeWatchService();
                 try {
                     Thread.sleep(watchRetryDelayMs);
                 } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
                     break;
                 }
             }

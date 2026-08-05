@@ -10,6 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -136,6 +138,69 @@ class IndexingServiceTest {
 
         verify(imageRepo).setMissing(missingFolderPath, true);
         verify(imageRepo, never()).deleteByPath(anyString());
+    }
+
+    @Test
+    void stopWatching_ShouldTerminateWatcher_NotResurrectIt(@TempDir Path tempDir) throws Exception {
+        // A watcher blocked in take() is stopped by interrupting it. InterruptedException clears the
+        // interrupt flag, so a loop guarded only by isInterrupted() used to fall through, build a
+        // fresh WatchService and keep running forever - one leaked watcher per folder navigation.
+        IndexingService service = watcherService();
+        CountDownLatch fired = new CountDownLatch(1);
+
+        service.startWatching(tempDir.toFile(), event -> fired.countDown());
+        Thread.sleep(300);
+
+        service.stopWatching();
+        Thread.sleep(300);
+
+        Files.write(tempDir.resolve("created.png"), new byte[]{1, 2, 3, 4});
+
+        assertFalse(fired.await(1500, TimeUnit.MILLISECONDS),
+                "A watcher was still processing events after stopWatching() - the watcher leaked");
+    }
+
+    @Test
+    void startWatching_Concurrently_ShouldNotLeakWatchers(@TempDir Path tempDir) throws Exception {
+        // Overlapping /library/scan calls each call startWatching. Interleaved stop/start used to
+        // leave a watcher that was never recorded in the field, so it was never interrupted.
+        IndexingService service = watcherService();
+        CountDownLatch fired = new CountDownLatch(1);
+
+        int threads = 8;
+        CountDownLatch start = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(threads);
+        for (int i = 0; i < threads; i++) {
+            new Thread(() -> {
+                try {
+                    start.await();
+                    service.startWatching(tempDir.toFile(), event -> fired.countDown());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } finally {
+                    done.countDown();
+                }
+            }).start();
+        }
+        start.countDown();
+        assertTrue(done.await(5, TimeUnit.SECONDS), "Test threads did not finish");
+        Thread.sleep(300);
+
+        service.stopWatching();
+        Thread.sleep(300);
+
+        Files.write(tempDir.resolve("created.png"), new byte[]{1, 2, 3, 4});
+
+        assertFalse(fired.await(1500, TimeUnit.MILLISECONDS),
+                "A watcher survived stopWatching() - concurrent startWatching calls leaked a watcher");
+    }
+
+    /** Same collaborators, but with short debounce/retry delays so watcher timing is testable. */
+    private IndexingService watcherService() {
+        return new IndexingService(
+                imageRepo, metaService, dataManager, pathService, thumbnailService, dHashService, statusTracker,
+                20, 50, 50, 10
+        );
     }
 
     @Test
