@@ -427,10 +427,13 @@ Two more fixes from user screenshots:
   generic gray hover. Added `.win-btn.min:hover` (warning/amber) and
   `.win-btn.max:hover` (success/green), matching Latent Tools' `#win-min:hover`/
   `#win-max:hover` treatment — all three apps now use the same three-color scheme
-  (amber minimize / green maximize / red close) with tokens that already existed
-  identically in all three repos' `colors.css`.
+### 15. Comprehensive Code Review & Lockfile Maintenance (August 5, 2026)
 
-**Verification**: `cd frontend && npm run build` clean.
+Conducted a full-system architectural and code quality audit across `backend/`, `frontend/`, `electron/`, and `data/` against `AGENTS.md` guidelines and recent handover milestones:
+
+- **Formal Code Review Report**: Generated and published [`docs/code-review-2026-08-05.md`](file:///c:/Users/error/IdeaProjects/Projects/Latent-Library/docs/code-review-2026-08-05.md) covering backend architecture (Spring Boot 3.3, constructor injection, ArchUnit guardrails), frontend state management & DS tokens, SQLite FTS5 search, and Electron IPC safety.
+- **Dependency & Lockfile Prune**: Ran `cd frontend && npm install` to prune unreferenced `primeicons` dependencies from `frontend/package-lock.json` following the `lucide-vue-next` migration.
+- **Verification**: Executed backend unit suite (`cd backend && ./mvnw test` — 154/154 tests passed, 0 failures, including `ArchitectureTests`) and frontend production build (`cd frontend && npm run build` — 1,946 modules transformed, built clean in 2.02s).
 
 ---
 
