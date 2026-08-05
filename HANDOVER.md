@@ -607,6 +607,39 @@ stars were **not** visually confirmed: populating it needs a native file dialog,
 driven from an automated browser session. It compiles, imports `Star`, and uses the identical
 verified pattern with colour classes defined in its own scoped styles.
 
+### 21. Lucide Icons Squashed Inside Flex Buttons (August 6, 2026)
+
+Reported as "stars in single image view are bugged" — `MetadataSidebar`'s rating row rendered as
+five tiny dots. Measuring in the page showed the real fault, and it was **not** specific to stars:
+
+```
+svg width attribute = 16    computed width = 2px    computed height = 16px
+button: width 32px, padding 8px 14px, display flex
+```
+
+- **Root cause**: Lucide renders icons as real `<svg>` elements, which are **flex items with the
+  default `flex-shrink: 1`**. The PrimeIcons font glyphs they replaced in §11 are inline text and
+  keep their size, so nothing had ever constrained them. Inside PrimeVue's flex `.p-button`, the
+  horizontal padding now compresses the SVG instead. The rating buttons are the extreme case:
+  `.p-button`'s `0.5rem 0.875rem` padding (28px) inside an explicit `w-2rem` (32px) box leaves a
+  4px content box, so a 16px star collapsed to a 2px sliver. (`p-0` does not win — PrimeFlex's
+  `.p-0` and PrimeVue's `.p-button` have equal specificity, and the theme is imported later.)
+- **Not just the stars**: a sweep comparing every `<svg>`'s `width` attribute against its computed
+  width found **19 squashed icons app-wide** — toolbar nav buttons rendering 20px icons at 10px,
+  metadata action buttons, the folder-nav pin button. This also explains §12, where the icons were
+  described as "too small" and worked around by bumping `:size` from 16 to 20; the real fault was
+  horizontal squashing, which is why they looked wrong rather than merely small.
+- **Fix**: one rule in `base.css`, keyed off the `lucide` class every Lucide icon carries:
+  `.lucide { flex: 0 0 auto; }`. An icon should never shrink below its intrinsic size; overflowing
+  into the container's padding is harmless because these buttons centre their content and clip at
+  the padding box, which spans the full button width. Preferred over patching each component or
+  each PrimeVue selector, since the cause is generic to every flex container holding an icon.
+- **Verification**: squashed icons went **19 → 0** across 54 SVGs on the page. The only element
+  still flagged is the titlebar minimise button, whose glyph is legitimately a 1px-tall horizontal
+  line — a false positive of the detector, not a defect. Visually confirmed: the 3-star image now
+  shows three filled amber stars and two outlines, and the toolbar/metadata icons render at full
+  size.
+
 ---
 
 ## Verification & Build Commands

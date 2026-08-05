@@ -35,6 +35,23 @@ body {
     background: var(--color-border-strong, rgba(255, 255, 255, 0.18));
 }
 
+/* --- Icons --- */
+/*
+ * Lucide renders every icon as a real <svg>, and almost every icon sits inside a flex
+ * container (PrimeVue buttons, DS icon buttons, toolbars). An <svg> is a flex item with
+ * the default flex-shrink: 1, so any horizontal padding on its container compresses it
+ * below its intrinsic width - unlike the PrimeIcons font glyphs it replaced, which are
+ * inline text and keep their size. That squashed icons app-wide after the migration:
+ * 20px toolbar icons rendered 10px, and 16px rating stars inside a fixed 2rem button
+ * collapsed to 2px slivers.
+ *
+ * An icon should never shrink; overflowing into its container's padding is harmless
+ * because these buttons centre their content and clip at the padding box.
+ */
+.lucide {
+    flex: 0 0 auto;
+}
+
 /* --- Typography Utilities --- */
 .text-primary { color: var(--color-text-primary, #F2F3F7); }
 .text-secondary { color: var(--color-text-secondary, #9294A3); }
