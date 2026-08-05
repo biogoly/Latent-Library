@@ -172,6 +172,7 @@
     border-radius: 50% !important;
     transition: color var(--duration-fast, 120ms) ease, background-color var(--duration-fast, 120ms) ease !important;
     z-index: 2 !important;
+    pointer-events: auto !important;
 }
 
 .p-dropdown .p-dropdown-clear-icon:hover {

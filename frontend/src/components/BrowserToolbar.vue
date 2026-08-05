@@ -184,7 +184,9 @@ onUnmounted(() => {
                           @before-show="refreshFilters"
                           v-tooltip.bottom="'Filter by Model'">
                   <template #clearicon>
-                    <X :size="12" />
+                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('model')">
+                      <X :size="12" />
+                    </span>
                   </template>
                 </Dropdown>
               </div>
@@ -198,7 +200,9 @@ onUnmounted(() => {
                           @before-show="refreshFilters"
                           v-tooltip.bottom="'Filter by Sampler'">
                   <template #clearicon>
-                    <X :size="12" />
+                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('sampler')">
+                      <X :size="12" />
+                    </span>
                   </template>
                 </Dropdown>
               </div>
@@ -212,7 +216,9 @@ onUnmounted(() => {
                           @before-show="refreshFilters"
                           v-tooltip.bottom="'Filter by LoRA'">
                   <template #clearicon>
-                    <X :size="12" />
+                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('lora')">
+                      <X :size="12" />
+                    </span>
                   </template>
                 </Dropdown>
               </div>
@@ -226,7 +232,9 @@ onUnmounted(() => {
                           :scrollHeight="'40vh'"
                           v-tooltip.bottom="'Filter by Rating'">
                   <template #clearicon>
-                    <X :size="12" />
+                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('rating')">
+                      <X :size="12" />
+                    </span>
                   </template>
                   <template #option="slotProps">
                     <div v-if="slotProps.option === 'Any Star Count'" class="flex align-items-center">
