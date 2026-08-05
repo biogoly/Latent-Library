@@ -131,14 +131,22 @@
     align-items: center !important;
     height: 32px !important;
     position: relative !important;
+    overflow: hidden !important;
 }
 
 .p-dropdown .p-dropdown-label {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
     color: var(--color-text-primary, #F2F3F7) !important;
     font-family: var(--font-sans, Inter, sans-serif) !important;
     font-size: 12px !important;
     font-weight: 500 !important;
-    padding: 4px 22px 4px 8px !important;
+    padding: 0 22px 0 10px !important;
+    line-height: 30px !important;
+    flex: 1 1 auto !important;
+    width: 1% !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
@@ -146,21 +154,22 @@
 
 .p-dropdown:has(.p-dropdown-clear-icon) .p-dropdown-label,
 .p-dropdown.p-dropdown-clearable .p-dropdown-label {
-    padding-right: 32px !important;
+    padding-right: 34px !important;
 }
 
 .p-dropdown .p-dropdown-trigger {
     color: var(--color-text-secondary, #9294A3) !important;
-    width: 20px !important;
+    width: 22px !important;
+    flex-shrink: 0 !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    padding-right: 2px !important;
+    padding-right: 4px !important;
 }
 
 .p-dropdown .p-dropdown-clear-icon {
     position: absolute !important;
-    right: 18px !important;
+    right: 20px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     color: var(--color-text-secondary, #9294A3) !important;

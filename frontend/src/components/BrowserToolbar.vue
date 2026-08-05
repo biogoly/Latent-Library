@@ -364,6 +364,9 @@ onUnmounted(() => {
 }
 
 :deep(.p-dropdown .p-dropdown-label) {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     color: var(--color-text-primary, #F2F3F7) !important;
 }
 
