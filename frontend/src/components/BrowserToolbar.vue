@@ -182,7 +182,11 @@ onUnmounted(() => {
                           @change="store.setFilter('model', $event.value)"
                           :scrollHeight="'40vh'"
                           @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by Model'"/>
+                          v-tooltip.bottom="'Filter by Model'">
+                  <template #clearicon>
+                    <X :size="12" />
+                  </template>
+                </Dropdown>
               </div>
 
               <div class="flex align-items-center">
@@ -192,7 +196,11 @@ onUnmounted(() => {
                           @change="store.setFilter('sampler', $event.value)"
                           :scrollHeight="'40vh'"
                           @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by Sampler'"/>
+                          v-tooltip.bottom="'Filter by Sampler'">
+                  <template #clearicon>
+                    <X :size="12" />
+                  </template>
+                </Dropdown>
               </div>
 
               <div class="flex align-items-center">
@@ -202,7 +210,11 @@ onUnmounted(() => {
                           @change="store.setFilter('lora', $event.value)"
                           :scrollHeight="'40vh'"
                           @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by LoRA'"/>
+                          v-tooltip.bottom="'Filter by LoRA'">
+                  <template #clearicon>
+                    <X :size="12" />
+                  </template>
+                </Dropdown>
               </div>
 
               <div class="flex align-items-center">
@@ -213,6 +225,9 @@ onUnmounted(() => {
                           @change="store.setFilter('rating', $event.value)"
                           :scrollHeight="'40vh'"
                           v-tooltip.bottom="'Filter by Rating'">
+                  <template #clearicon>
+                    <X :size="12" />
+                  </template>
                   <template #option="slotProps">
                     <div v-if="slotProps.option === 'Any Star Count'" class="flex align-items-center">
                       <span>Any Star Count</span>
