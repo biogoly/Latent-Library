@@ -175,66 +175,57 @@ onUnmounted(() => {
 
             <div class="flex gap-2 align-items-center">
 
-              <div class="flex align-items-center">
+              <!-- Tooltips sit on the wrapper, not the Dropdown: PrimeVue's Tooltip resolves a
+                   .p-inputwrapper element to its inner <input>, and a non-editable, non-filter
+                   Dropdown renders a <span> label instead, so the directive would target null. -->
+              <div class="flex align-items-center" v-tooltip.bottom="'Filter by Model'">
                 <Dropdown :options="store.availableModels" v-model="store.selectedModel"
                           placeholder="Model" class="p-button-sm"
                           :showClear="isFilterActive(store.selectedModel)"
                           @change="store.setFilter('model', $event.value)"
                           :scrollHeight="'40vh'"
-                          @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by Model'">
+                          @before-show="refreshFilters">
                   <template #clearicon>
-                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('model')">
-                      <X :size="12" />
-                    </span>
+                    <X :size="12" class="cursor-pointer" @click.stop="clearFilter('model')" />
                   </template>
                 </Dropdown>
               </div>
 
-              <div class="flex align-items-center">
+              <div class="flex align-items-center" v-tooltip.bottom="'Filter by Sampler'">
                 <Dropdown :options="store.availableSamplers" v-model="store.selectedSampler"
                           placeholder="Sampler" class="p-button-sm"
                           :showClear="isFilterActive(store.selectedSampler)"
                           @change="store.setFilter('sampler', $event.value)"
                           :scrollHeight="'40vh'"
-                          @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by Sampler'">
+                          @before-show="refreshFilters">
                   <template #clearicon>
-                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('sampler')">
-                      <X :size="12" />
-                    </span>
+                    <X :size="12" class="cursor-pointer" @click.stop="clearFilter('sampler')" />
                   </template>
                 </Dropdown>
               </div>
 
-              <div class="flex align-items-center">
+              <div class="flex align-items-center" v-tooltip.bottom="'Filter by LoRA'">
                 <Dropdown :options="store.availableLoras" v-model="store.selectedLora"
                           placeholder="LoRA" class="p-button-sm"
                           :showClear="isFilterActive(store.selectedLora)"
                           @change="store.setFilter('lora', $event.value)"
                           :scrollHeight="'40vh'"
-                          @before-show="refreshFilters"
-                          v-tooltip.bottom="'Filter by LoRA'">
+                          @before-show="refreshFilters">
                   <template #clearicon>
-                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('lora')">
-                      <X :size="12" />
-                    </span>
+                    <X :size="12" class="cursor-pointer" @click.stop="clearFilter('lora')" />
                   </template>
                 </Dropdown>
               </div>
 
-              <div class="flex align-items-center">
+              <div class="flex align-items-center" v-tooltip.bottom="'Filter by Rating'">
                 <Dropdown v-model="store.selectedRating"
                           :options="['Any Star Count', '1', '2', '3', '4', '5']"
                           placeholder="Stars" class="p-button-sm"
                           :showClear="isFilterActive(store.selectedRating)"
                           @change="store.setFilter('rating', $event.value)"
-                          :scrollHeight="'40vh'"
-                          v-tooltip.bottom="'Filter by Rating'">
+                          :scrollHeight="'40vh'">
                   <template #clearicon>
-                    <span class="flex align-items-center justify-content-center w-full h-full cursor-pointer" @click.stop="clearFilter('rating')">
-                      <X :size="12" />
-                    </span>
+                    <X :size="12" class="cursor-pointer" @click.stop="clearFilter('rating')" />
                   </template>
                   <template #option="slotProps">
                     <div v-if="slotProps.option === 'Any Star Count'" class="flex align-items-center">
