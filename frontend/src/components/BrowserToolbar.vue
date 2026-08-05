@@ -359,6 +359,8 @@ onUnmounted(() => {
     border: 1px solid var(--color-border-default, rgba(255, 255, 255, 0.10)) !important;
     color: var(--color-text-primary, #F2F3F7) !important;
     border-radius: var(--radius-sm, 6px) !important;
+    max-width: 220px;
+    min-width: 110px;
 }
 
 :deep(.p-dropdown .p-dropdown-label) {

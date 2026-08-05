@@ -138,7 +138,7 @@
     font-family: var(--font-sans, Inter, sans-serif) !important;
     font-size: 12px !important;
     font-weight: 500 !important;
-    padding: 4px 26px 4px 10px !important;
+    padding: 4px 22px 4px 8px !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
@@ -146,20 +146,21 @@
 
 .p-dropdown:has(.p-dropdown-clear-icon) .p-dropdown-label,
 .p-dropdown.p-dropdown-clearable .p-dropdown-label {
-    padding-right: 44px !important;
+    padding-right: 32px !important;
 }
 
 .p-dropdown .p-dropdown-trigger {
     color: var(--color-text-secondary, #9294A3) !important;
-    width: 26px !important;
+    width: 20px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    padding-right: 2px !important;
 }
 
 .p-dropdown .p-dropdown-clear-icon {
     position: absolute !important;
-    right: 24px !important;
+    right: 18px !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
     color: var(--color-text-secondary, #9294A3) !important;
@@ -167,8 +168,8 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 18px !important;
-    height: 18px !important;
+    width: 14px !important;
+    height: 14px !important;
     border-radius: 50% !important;
     transition: color var(--duration-fast, 120ms) ease, background-color var(--duration-fast, 120ms) ease !important;
     z-index: 2 !important;
@@ -177,7 +178,7 @@
 
 .p-dropdown .p-dropdown-clear-icon:hover {
     color: var(--color-text-primary, #F2F3F7) !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .p-dropdown-panel {
