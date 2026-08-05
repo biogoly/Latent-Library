@@ -176,9 +176,10 @@ Failures that the caller cannot observe belong at `WARN` with enough context to 
 - **Comparator star ratings are unverified visually.** `ComparisonMetadataPanel.vue` uses the same
   Lucide `Star` pattern verified elsewhere, but populating the Comparator needs a native file
   dialog, so it was never seen rendering. Worth a glance when that view is next opened.
-- **Stale remote branch.** `origin/feature/ui-redesign` still exists although its content is
-  identical to `main`; a local `main-backup-before-rewrite` also remains from an earlier history
-  rewrite. Both are candidates for deletion.
+- **`development` looks abandoned.** It is 53 commits behind `main`, contributes nothing unique,
+  and was last touched on 2026-03-01. No workflow documented here uses it (unlike Latent Model
+  Organizer, where releases branch from `development`). Either fast-forward it to `main` or delete
+  it — leaving it stale invites someone to branch from it by mistake.
 
 ---
 
