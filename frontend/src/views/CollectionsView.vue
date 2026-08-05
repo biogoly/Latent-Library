@@ -3,7 +3,7 @@
  * @file CollectionsView.vue
  * @description A comprehensive management interface for image collections, supporting static and dynamic (smart) groupings aligned with the Latent Design System.
  */
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, reactive, onMounted, computed, watch } from 'vue';
 import api, { authenticatedUrl } from '@/services/api';
 import { useBrowserStore } from '@/stores/browser';
 import LButton from '@/components/ds/LButton.vue';
@@ -15,6 +15,7 @@ import MultiSelect from 'primevue/multiselect';
 import { useToast } from 'primevue/usetoast';
 import { useRouter } from 'vue-router';
 import CustomContextMenu from '@/components/CustomContextMenu.vue';
+import MissingFileThumb from '@/components/ds/MissingFileThumb.vue';
 import { Plus, Folder, Bolt, Check, X, FolderOpen, Pencil, Trash2 } from 'lucide-vue-next';
 
 const store = useBrowserStore();
@@ -22,6 +23,8 @@ const router = useRouter();
 const toast = useToast();
 
 const collections = ref([]);
+/** Preview paths whose thumbnail 404d, so the stack tile shows a placeholder instead of a broken image. */
+const missingPreviews = reactive(new Set());
 const displayCreateDialog = ref(false);
 const isEditing = ref(false);
 
@@ -239,7 +242,9 @@ onMounted(() => {
                     opacity: 1 - (index * 0.15)
                   }"
                 >
-                  <img :src="getThumbnailUrl(path)" alt="Preview" class="stack-img" />
+                  <MissingFileThumb v-if="missingPreviews.has(path)" :icon-size="28" :show-label="false" />
+                  <img v-else :src="getThumbnailUrl(path)" alt="" class="stack-img"
+                       @error="missingPreviews.add(path)" />
                 </div>
               </div>
               <div v-else class="stack-empty flex align-items-center justify-content-center">

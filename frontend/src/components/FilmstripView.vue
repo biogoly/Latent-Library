@@ -16,12 +16,19 @@
  * - **Authenticated Media:** Uses the {@code authenticatedUrl} helper to ensure thumbnails are loaded with the required security token.
  */
 import {useBrowserStore} from '@/stores/browser';
-import {ref, computed, onMounted, onUnmounted, watch} from 'vue';
+import {ref, reactive, computed, onMounted, onUnmounted, watch} from 'vue';
 import {authenticatedUrl} from '@/services/api';
+import MissingFileThumb from '@/components/ds/MissingFileThumb.vue';
 
 const store = useBrowserStore();
 const containerRef = ref(null);
 const containerWidth = ref(0);
+
+/**
+ * Paths whose thumbnail 404d because the file is unreadable. Keyed by path rather than by index
+ * because the strip re-slices around the selection as the user navigates.
+ */
+const missingPaths = reactive(new Set());
 
 const VISIBLE_BUFFER = 20;
 const DEFAULT_SLICE_SIZE = 40;
@@ -111,10 +118,13 @@ onUnmounted(() => {
 
         <div class="relative border-round overflow-hidden flex align-items-center justify-content-center"
              :style="{ width: `${ITEM_WIDTH}px`, height: `${ITEM_WIDTH}px` }">
-          <img :src="authenticatedUrl(`/api/images/thumbnail?path=${encodeURIComponent(file.path)}`)"
+          <MissingFileThumb v-if="missingPaths.has(file.path)" :icon-size="24" :show-label="false" />
+          <img v-else :src="authenticatedUrl(`/api/images/thumbnail?path=${encodeURIComponent(file.path)}`)"
                loading="lazy"
+               alt=""
                class="w-full h-full"
-               style="object-fit: contain;"/>
+               style="object-fit: contain;"
+               @error="missingPaths.add(file.path)"/>
         </div>
       </div>
     </div>

@@ -15,9 +15,10 @@
  * - **Authenticated Media:** Uses the {@code authenticatedUrl} helper to ensure thumbnails are loaded with the required security token.
  * - **Responsive Metadata:** Conditionally renders star ratings and model information based on availability.
  */
-import {computed} from 'vue';
+import {computed, ref, watch} from 'vue';
 import Card from 'primevue/card';
 import {authenticatedUrl} from '@/services/api';
+import MissingFileThumb from '@/components/ds/MissingFileThumb.vue';
 
 const props = defineProps({
   file: {
@@ -27,6 +28,16 @@ const props = defineProps({
 });
 
 const imageUrl = computed(() => authenticatedUrl(`/api/images/thumbnail?path=${encodeURIComponent(props.file.path)}`));
+
+/**
+ * The thumbnail endpoint 404s when the source file cannot be read. Cards are recycled by the
+ * virtualized grid, so the flag has to reset whenever the card is bound to a different file -
+ * otherwise one missing file would poison every row that later reuses its DOM node.
+ */
+const isMissing = ref(false);
+watch(() => props.file.path, () => {
+  isMissing.value = false;
+});
 
 const emit = defineEmits(['contextmenu']);
 
@@ -43,13 +54,18 @@ const onRightClick = (event) => {
       <template #header>
         <div class="aspect-ratio-container surface-card flex align-items-center justify-content-center relative h-full">
 
-          <img :src="imageUrl" aria-hidden="true" loading="lazy" decoding="async"
-               class="absolute top-0 left-0 w-full h-full opacity-50"
-               style="object-fit: cover; filter: blur(10px); pointer-events: none;" />
+          <template v-if="!isMissing">
+            <img :src="imageUrl" aria-hidden="true" loading="lazy" decoding="async"
+                 class="absolute top-0 left-0 w-full h-full opacity-50"
+                 style="object-fit: cover; filter: blur(10px); pointer-events: none;" />
 
-          <img :src="imageUrl" alt="AI Image" loading="lazy" decoding="async"
-               class="lazy-image relative w-full h-full"
-               style="object-fit: contain; z-index: 1;" />
+            <img :src="imageUrl" alt="" loading="lazy" decoding="async"
+                 class="lazy-image relative w-full h-full"
+                 style="object-fit: contain; z-index: 1;"
+                 @error="isMissing = true" />
+          </template>
+
+          <MissingFileThumb v-else class="absolute top-0 left-0" />
 
           <div class="absolute bottom-0 left-0 w-full p-2 glass-overlay flex flex-column gap-1" style="z-index: 2;">
             <div class="flex gap-1" v-if="file.rating > 0">

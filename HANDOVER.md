@@ -553,6 +553,40 @@ Follow-up to §17, fixing the three secondary bugs that investigation uncovered.
 **Verification**: `./mvnw test` — **159/159 passed** (was 157); `npm run build` clean; jar rebuilt
 and all three fixes confirmed against the running app.
 
+### 19. "File missing" Thumbnail Placeholder (August 5, 2026)
+
+With §17 in place, unreadable files now 404 promptly — but the UI rendered that as the browser's
+own broken-image glyph plus the leaked `alt` text ("AI Image"), which reads as a rendering fault
+rather than as a statement about the file.
+
+- **New `components/ds/MissingFileThumb.vue`**: muted DS placeholder — `ImageOff` (lucide) at
+  `--color-text-secondary` on `--color-surface-1`, with an optional 11px "File missing" caption.
+  Deliberately *not* danger-coloured: a missing file is an expected state in a local-first library,
+  not an application error. Props `iconSize` / `showLabel` / `label` let dense strips drop the
+  caption.
+- **Wired into three call sites** via each `<img>`'s `@error` handler (the same signal the 404
+  produces), which is why a shared component was worth extracting rather than duplicating markup:
+  - `ImageCard.vue` (gallery grid) — icon + caption, with the blurred backdrop `<img>` suppressed
+    too so no broken-image artefact shows through. The missing flag is **reset by a `watch` on
+    `file.path`**: cards are recycled by the virtualized grid, so without it one missing file would
+    poison every row that later reused its DOM node.
+  - `FilmstripView.vue` (bottom strip) — glyph only at 24px; tiles are too small for legible text.
+    Tracked in a `reactive(Set)` keyed by path, since the strip re-slices around the selection.
+  - `CollectionsView.vue` (preview stacks) — glyph only at 28px.
+- `alt` text was emptied on these decorative thumbnails (the filename is already rendered as visible
+  text beside them), so a failed load no longer paints stray alt text over the tile.
+- The large `SingleImageViewer` canvas keeps its existing explicit red "Failed to load image" state —
+  a full-viewport failure the user actively navigated to warrants a louder treatment than a grid tile.
+
+**Verification**: `npm run build` clean, jar rebuilt, verified live — all 26 tiles of an unreadable
+folder render the placeholder consistently in both grid and filmstrip, collection previews are
+unaffected, and a healthy folder still loads every real thumbnail with **no false positives**.
+
+**Known issue, not fixed here**: `ImageCard.vue` still renders its star rating with PrimeIcons
+classes (`pi pi-star-fill` / `pi pi-star`). The `primeicons` package and its stylesheet were removed
+in §11, so those stars currently render as nothing. Out of scope for this change but worth a
+follow-up — §11's "grep returns zero results" claim missed this file.
+
 ---
 
 ## Verification & Build Commands
