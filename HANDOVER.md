@@ -52,9 +52,14 @@ App version `1.1.1`. Active branch is `main`.
 `AGENTS.md` is the rulebook; `CLAUDE.md` imports it, `GEMINI.md` duplicates it.
 `.claude/settings.json` holds the permission allowlist.
 
-`.agents/skills/` currently contains `ai-setup-doctor`, `api-design`, `spring-security`, and
-`sql-migrations`. Note that `AGENTS.md` also points at `java-springboot/`, `frontend-design/`,
-`web-design-guidelines/`, and `vue/`, **none of which exist** — see open issues.
+`.agents/skills/` contains all eight skills `AGENTS.md` points at: the custom `ai-setup-doctor`,
+`api-design`, `spring-security`, `sql-migrations`, plus the vendored third-party
+`java-springboot`, `frontend-design`, `web-design-guidelines`, `vue`. Provenance and
+review-time hashes for the vendored four are recorded in `skills-lock.json`; those four are
+byte-identical to the copies in the sister repos, so update them as a suite.
+
+Claude Code reads them through the `.claude/skills` symlink (gitignored — it must be recreated
+after a fresh clone; `ai-setup-doctor` checks this).
 
 ---
 
@@ -139,6 +144,28 @@ log lines), which previously let one watcher escape being recorded and therefore
 unreadable file left no trace anywhere and the caller silently fell through to a 15s timeout.
 Failures that the caller cannot observe belong at `WARN` with enough context to identify the file.
 
+### The legacy token namespace is still load-bearing
+
+`assets/css/components/layout.css` looks like leftover pre-redesign CSS, but it is live and it
+resolves **10 variables that only the five `assets/css/themes/*.css` files define**:
+
+```
+--bg-input  --border-input  --text-primary  --text-secondary  --grad-hover
+--bg-panel-opaque  --accent-primary  --scrollbar-track  --scrollbar-thumb  --scrollbar-thumb-hover
+```
+
+They appear in 15 declarations at `layout.css:8-69` (panel chrome, dropdown surfaces, scrollbars).
+None of them are declared with a `var(--x, fallback)` default, so **deleting the theme imports
+from `main.js:32-36` makes all 15 resolve to nothing** — no console error, no build failure, just
+text and scrollbars falling back to UA defaults. Latent Model Organizer shipped exactly this bug
+by making exactly this deletion; don't repeat it.
+
+The theme files are otherwise dead (the multi-theme picker is gone, `SettingsModal` shows a static
+single-theme box), so the deletion is still the right end state — it just has a prerequisite:
+rewrite those 15 declarations onto the DS token namespace (`--color-surface-*`,
+`--color-text-*`, `--color-border-*`) first, verify against a rebuilt jar, and only then remove
+the imports and the files.
+
 ### PrimeVue and Vue gotchas
 
 - **Tooltip on a `Dropdown` throws.** PrimeVue resolves a tooltip target as
@@ -158,21 +185,14 @@ Failures that the caller cannot observe belong at `WARN` with enough context to 
 
 ## Open issues
 
-- **Legacy theme CSS is dead weight.** `assets/css/themes/{neon,light,gold,fanfriction,
-  fanfriction-light}.css` and `components/layout.css` are still imported by `main.js` and still
-  define the pre-redesign token namespace (`--bg-app`, `--accent-primary`, `--grad-hover`,
-  `--status-danger`). No component depends on them any more — the multi-theme picker was removed
-  and `SettingsModal` now shows a static single-theme box. They should be deleted, but that needs
-  a check that nothing in `layout.css` is still load-bearing.
-- **`AGENTS.md` references four skills that do not exist**: `java-springboot/`,
-  `frontend-design/`, `web-design-guidelines/`, `vue/`. Either add them or drop the references —
-  as written, the rulebook tells an assistant to consult files it cannot find.
+- **Legacy theme CSS cannot simply be deleted — see the trap above.** `components/layout.css`
+  still resolves 10 pre-redesign variables that only `assets/css/themes/*.css` define. Removing
+  the theme imports without first rewriting `layout.css` onto DS tokens breaks rendering silently.
+  The correct order is: rewrite `layout.css`, then delete the five theme imports from `main.js`,
+  then delete the theme files.
 - **README screenshots are pre-redesign.** All five still show the old "AI Toolbox" branding and
   top-nav layout. `assets/screenshots/custom_themes.png` is orphaned (no longer referenced) and
   can be deleted. Recapturing needs a running app plus curated sample images.
-- **`docs/` is gitignored but `docs/code-review-2026-08-05.md` is tracked.** Any `git add` of a
-  file in that directory needs `-f`, which is an easy trap. Either untrack the file or narrow the
-  ignore rule.
 - **Comparator star ratings are unverified visually.** `ComparisonMetadataPanel.vue` uses the same
   Lucide `Star` pattern verified elsewhere, but populating the Comparator needs a native file
   dialog, so it was never seen rendering. Worth a glance when that view is next opened.
