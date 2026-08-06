@@ -26,6 +26,8 @@ frontend/data/
 drop-in-brain-main/
 
 # Documentation & Design System Repositories
+# docs/ is a scratch area for reviews, audits and plans — nothing in it is tracked.
+# Do not `git add -f` files here: durable documentation belongs in HANDOVER.md or README.md.
 docs/
 Latent-Design-System/
 
