@@ -23,6 +23,16 @@ and an ONNX-powered WD14 auto-tagger.
 
 App version `1.1.1`. Active branch is `main`.
 
+### Place in the Latent suite
+
+Latent Library is one of three sibling apps that share the **Latent Design System**
+(`Latent-Design-System/`, vendored into `assets/css/latent/tokens/`); the others are Latent Model
+Organizer and Latent Tools. Only the tokens and the two logo SVGs are shared — there is no shared
+component library, build, or release process, and the three diverge on stack (LL and LMO are Vue,
+LT is vanilla TS; LL is on PrimeVue 3, LMO on PrimeVue 4). Treat sibling repos as reference, not
+as a dependency: nothing here breaks if they change. What *is* worth keeping in step is the token
+files and the vendored skills — re-vendor rather than edit in place.
+
 ### Repository map
 
 - `backend/src/main/java/com/nilsson/backend/`
@@ -42,8 +52,12 @@ App version `1.1.1`. Active branch is `main`.
   - `views/` — `ImageBrowserView` (gallery/browser), `CollectionsView`, `ComparatorView`,
     `ScrubView`, `SpeedSorterView`, `DuplicateDetectiveView`.
   - `stores/browser.js` — the central Pinia store; most view state lives here.
-  - `assets/css/` — `latent/tokens/*` are the DS tokens; `components/base.css` holds global
-    utilities; `components/primevue-overrides.css` holds PrimeVue theme overrides.
+  - `assets/css/` — `latent/tokens/*` are the vendored DS tokens (the single source of colour,
+    spacing and type); `components/base.css` holds global utilities, `layout.css` shared
+    patterns (inputs, dialogs, scrollbars, chips), `buttons.css` window and nav controls, and
+    `primevue-overrides.css` the PrimeVue theme overrides. Everything resolves against
+    `--color-*` / `--radius-*` / `--duration-*`; there is no second token namespace and no
+    theme switcher.
 - `electron/` — `main.js` spawns `backend/target/backend.jar`, reads `data/port.txt` for the
   port + handshake token, and streams backend stdout into the terminal.
 
@@ -182,6 +196,30 @@ token) documents a dimension the system doesn't use and is worse than none.
   (`[data-v-c4bd1c5a]`, higher specificity, also `!important`) overrides its background to
   `--color-surface-1`. Editing `layout.css` alone will not change how that input looks — check
   the component's own `<style scoped>` first.
+- **The frontend has no test tooling at all.** No Vitest, no Vue Test Utils, no spec files, no
+  `test` script. Every UI change is verified by eye against a rebuilt jar. That is the binding
+  constraint on any component refactor — size the work accordingly, and consider adding Vitest
+  before a large one rather than after.
+- **Nothing mechanically enforces design-system adherence.** The DS ships
+  `_adherence.oxlintrc.json`, which lints exactly the raw-hex and magic-px violations that keep
+  reappearing, but no npm script runs it. Wiring it into `npm run lint` is the cheapest way to
+  stop the drift recurring.
+- **`primevue-overrides.css` is the weak point of the CSS layer.** 385 lines, 212 `!important`
+  declarations, and three raw hexes (`#67E0D8`, `#FFFFFF` at `:248-249`, `#4FD8D0` at `:268`).
+  It exists because PrimeVue's theme is imported after our CSS. The durable fix is to shrink it:
+  `components/ds/` already has `LSelect`, `LSwitch`, `LInput` and `LSlider` at parity with the
+  PrimeVue components those rules target, and each swap deletes a block of overrides. `Dialog`,
+  `Card` and `Button` are *not* at parity — `LDialog` has no focus trap or scroll lock — so those
+  need DS work first.
+- **`LButton`'s `primary` variant diverges from the DS reference.** The spec makes `primary`
+  `--color-surface-3` plus a strong border and reserves the accent fill for `cta`; ours fills
+  solid accent, which dilutes the "one gradient CTA per screen" restraint.
+- **`.dropzone-hint` is a component rule inside a token file.** `latent/tokens/effects.css:17`.
+  It came in with the vendored DS and the DS's own guide forbids it. Fix upstream, then re-vendor
+  — don't patch the local copy or the next re-vendor reverts it.
+- **`#FFFFFF` on the close-button hover has no token.** `buttons.css:45`. The DS has no on-danger
+  text colour (`--color-text-on-accent` is `#06101A`, for cyan). Needs either a DS token or a
+  documented exemption once the adherence lint runs.
 - **README screenshots are pre-redesign.** All five still show the old "AI Toolbox" branding and
   top-nav layout. `assets/screenshots/custom_themes.png` is orphaned (no longer referenced) and
   can be deleted. Recapturing needs a running app plus curated sample images.
