@@ -4,15 +4,15 @@
  *
  * This script initializes the Vue application instance and configures the global plugin
  * ecosystem. It orchestrates the integration of state management (Pinia), routing,
- * and the UI component library (PrimeVue). It also establishes the global CSS foundation,
- * including the application's multi-theme system and custom component overrides.
+ * and the UI component library (PrimeVue). It also establishes the global CSS foundation:
+ * the Latent Design System tokens and the custom component overrides layered on top.
  *
  * Key Responsibilities:
  * - **App Initialization:** Bootstraps the root `App.vue` component.
  * - **Plugin Registration:** Configures Pinia, Vue Router, and PrimeVue services (Toast, Confirm).
  * - **Global Directives:** Registers custom directives like Tooltip for application-wide use.
  * - **Style Orchestration:** Imports core CSS frameworks (PrimeFlex) and
- *   the application's custom theme and layout systems.
+ *   the application's design tokens and layout systems.
  * - **Notification System:** Initializes `vue3-toastify` for standardized global error handling.
  */
 import {createApp} from 'vue'
@@ -29,11 +29,6 @@ import 'primevue/resources/themes/aura-dark-green/theme.css'
 import 'primeflex/primeflex.css'
 
 import './assets/css/latent/styles.css';
-import './assets/css/themes/neon.css';
-import './assets/css/themes/light.css';
-import './assets/css/themes/gold.css';
-import './assets/css/themes/fanfriction.css';
-import './assets/css/themes/fanfriction-light.css';
 import './assets/css/components/base.css';
 import './assets/css/components/primevue-overrides.css';
 import './assets/css/components/layout.css';

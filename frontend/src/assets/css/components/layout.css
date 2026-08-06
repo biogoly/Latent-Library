@@ -1,73 +1,78 @@
 /**
  * Layout & UI Components
- * Description: Reusable UI patterns like inputs, dialogs, and chips.
+ * Description: Reusable UI patterns like inputs, dialogs, chips and scrollbars.
+ *
+ * Every custom property here resolves against the Latent Design System tokens in
+ * assets/css/latent/tokens/. Keep the `var(--token, fallback)` form: an undefined
+ * custom property with no fallback fails silently to nothing.
  */
 
 /* --- Inputs --- */
+/* Matches the .p-inputtext treatment in primevue-overrides.css. */
 .glass-input {
-    background: var(--bg-input) !important;
-    border: 1px solid var(--border-input) !important;
-    color: var(--text-primary) !important;
-    backdrop-filter: blur(10px);
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background: var(--color-surface-2, #23252F) !important;
+    border: 1px solid var(--color-border-default, rgba(255, 255, 255, 0.10)) !important;
+    color: var(--color-text-primary, #F2F3F7) !important;
+    transition: border-color var(--duration-fast, 120ms) var(--ease-standard),
+                box-shadow var(--duration-fast, 120ms) var(--ease-standard);
 }
 
 .glass-input:enabled:focus {
-    box-shadow: none !important;
     outline: none !important;
-    border-color: transparent !important;
-    border-image: var(--grad-hover) 1 !important;
+    border-color: var(--color-accent-primary, #4FD8D0) !important;
+    box-shadow: 0 0 0 2px var(--color-accent-primary-bg, rgba(79, 216, 208, 0.12)) !important;
 }
 
 /* --- Dialogs --- */
+/* Mirrors the ds/LDialog.vue container so both dialog styles read as one system. */
 .glass-dialog {
-    background: var(--bg-panel-opaque) !important;
-    border: 1px solid var(--border-input) !important;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: var(--glass-blur) !important;
-    color: var(--text-primary) !important;
+    background: var(--color-surface-1, #14151B) !important;
+    border: 1px solid var(--color-border-default, rgba(255, 255, 255, 0.10)) !important;
+    box-shadow: var(--shadow-panel, 0 20px 60px -20px rgba(0, 0, 0, 0.65)) !important;
+    color: var(--color-text-primary, #F2F3F7) !important;
 }
 
 .glass-dialog .p-dialog-header,
 .glass-dialog .p-dialog-content,
 .glass-dialog .p-dialog-footer {
     background: transparent !important;
-    color: var(--text-primary) !important;
-    border-color: var(--border-input) !important;
+    color: var(--color-text-primary, #F2F3F7) !important;
+    border-color: var(--color-border-subtle, rgba(255, 255, 255, 0.06)) !important;
 }
 
 .glass-dialog .p-dialog-header-icon {
-    color: var(--text-secondary) !important;
+    color: var(--color-text-secondary, #9294A3) !important;
 }
 
 .glass-dialog .p-dialog-header-icon:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    color: var(--text-primary) !important;
+    background: var(--color-surface-2, #23252F) !important;
+    color: var(--color-text-primary, #F2F3F7) !important;
 }
 
 /* --- Custom Scrollbars --- */
+/* The track alpha is deliberately lighter than --color-border-subtle; no token fits. */
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
+    background: var(--color-border-default, rgba(255, 255, 255, 0.10));
     border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-thumb-hover);
+    background: var(--color-border-strong, rgba(255, 255, 255, 0.18));
 }
 
 /* --- Chips & Tags --- */
 .collection-chip {
-    background: rgba(102, 252, 241, 0.15) !important;
-    color: var(--accent-primary) !important;
-    border: 1px solid rgba(102, 252, 241, 0.3) !important;
+    background: var(--color-accent-primary-bg, rgba(79, 216, 208, 0.12)) !important;
+    color: var(--color-accent-primary, #4FD8D0) !important;
+    border: 1px solid rgba(79, 216, 208, 0.35) !important;
 }
 
 .lora-chip {
@@ -87,7 +92,6 @@
 
 
 .lora-chip:hover {
-    background: rgba(155, 126, 245, 0.12) !important;
+    background: var(--color-accent-secondary-bg, rgba(155, 126, 245, 0.12)) !important;
     border-color: rgba(155, 126, 245, 0.35) !important;
 }
-

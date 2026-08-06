@@ -144,27 +144,17 @@ log lines), which previously let one watcher escape being recorded and therefore
 unreadable file left no trace anywhere and the caller silently fell through to a 15s timeout.
 Failures that the caller cannot observe belong at `WARN` with enough context to identify the file.
 
-### The legacy token namespace is still load-bearing
+### An undefined custom property fails silently — always write a fallback
 
-`assets/css/components/layout.css` looks like leftover pre-redesign CSS, but it is live and it
-resolves **10 variables that only the five `assets/css/themes/*.css` files define**:
+`background: var(--nope)` is not an error. The declaration is invalid at computed-value time, so
+the property falls back to its initial value: no console message, no build failure, just a
+transparent background. This is how Latent Model Organizer shipped a whole broken theme, and how
+`base.css:104`'s `.glass-panel::after` gloss overlay has never rendered — `--app-glass-gloss` has
+no definition anywhere in the repo and no fallback.
 
-```
---bg-input  --border-input  --text-primary  --text-secondary  --grad-hover
---bg-panel-opaque  --accent-primary  --scrollbar-track  --scrollbar-thumb  --scrollbar-thumb-hover
-```
-
-They appear in 15 declarations at `layout.css:8-69` (panel chrome, dropdown surfaces, scrollbars).
-None of them are declared with a `var(--x, fallback)` default, so **deleting the theme imports
-from `main.js:32-36` makes all 15 resolve to nothing** — no console error, no build failure, just
-text and scrollbars falling back to UA defaults. Latent Model Organizer shipped exactly this bug
-by making exactly this deletion; don't repeat it.
-
-The theme files are otherwise dead (the multi-theme picker is gone, `SettingsModal` shows a static
-single-theme box), so the deletion is still the right end state — it just has a prerequisite:
-rewrite those 15 declarations onto the DS token namespace (`--color-surface-*`,
-`--color-text-*`, `--color-border-*`) first, verify against a rebuilt jar, and only then remove
-the imports and the files.
+The rule everywhere in `assets/css/`: `var(--token, sensible-fallback)`. The fallback must be the
+token's *current* value — a stale one (the old `var(--sidebar-width, 200px)` against a 224px
+token) documents a dimension the system doesn't use and is worse than none.
 
 ### PrimeVue and Vue gotchas
 
@@ -185,11 +175,13 @@ the imports and the files.
 
 ## Open issues
 
-- **Legacy theme CSS cannot simply be deleted — see the trap above.** `components/layout.css`
-  still resolves 10 pre-redesign variables that only `assets/css/themes/*.css` define. Removing
-  the theme imports without first rewriting `layout.css` onto DS tokens breaks rendering silently.
-  The correct order is: rewrite `layout.css`, then delete the five theme imports from `main.js`,
-  then delete the theme files.
+- **`.glass-panel::after` is dead decoration.** `base.css:100-107` paints a gloss overlay from
+  `--app-glass-gloss`, which is defined nowhere and has no fallback, so it has always rendered
+  nothing. Either define the token or delete the rule.
+- **`.glass-input` in `layout.css` is partly shadowed.** A scoped component rule
+  (`[data-v-c4bd1c5a]`, higher specificity, also `!important`) overrides its background to
+  `--color-surface-1`. Editing `layout.css` alone will not change how that input looks — check
+  the component's own `<style scoped>` first.
 - **README screenshots are pre-redesign.** All five still show the old "AI Toolbox" branding and
   top-nav layout. `assets/screenshots/custom_themes.png` is orphaned (no longer referenced) and
   can be deleted. Recapturing needs a running app plus curated sample images.
