@@ -78,8 +78,8 @@ const close = () => {
 
 <style scoped>
 .latent-titlebar {
-  height: 52px;
-  min-height: 52px;
+  height: var(--titlebar-height, 52px);
+  min-height: var(--titlebar-height, 52px);
   background: var(--color-bg-canvas, #0A0A0D);
   border-bottom: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.06));
   display: flex;
