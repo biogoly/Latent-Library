@@ -229,22 +229,17 @@ token) documents a dimension the system doesn't use and is worse than none.
   reappearing, but no npm script runs it. Wiring it into `npm run lint` is the cheapest way to
   stop the drift recurring.
 - **`primevue-overrides.css` is the weak point of the CSS layer.** 385 lines and 212
-  `!important` declarations. The two accent hexes at `:248` and `:268` are now tokenized
-  (`var(--color-accent-primary-hover, ...)` / `var(--color-accent-primary, ...)`); the
-  `#FFFFFF` slider-handle border at `:249` stays raw and documented — same gap as the
-  close-button hover below, no DS token for an on-accent white exists yet. `!important` and
-  line count are unchanged; fixing those needs the component swap, not a token swap.
-  It exists because PrimeVue's theme is imported after our CSS. The durable fix is to shrink it:
-  `components/ds/` already has `LSelect`, `LSwitch`, `LInput` and `LSlider` at parity with the
-  PrimeVue components those rules target, and each swap deletes a block of overrides. `Dialog`,
-  `Card` and `Button` are *not* at parity — `LDialog` has no focus trap or scroll lock — so those
-  need DS work first.
-- **`.dropzone-hint` is a component rule inside a token file.** `latent/tokens/effects.css:17`.
-  It came in with the vendored DS and the DS's own guide forbids it. Fix upstream, then re-vendor
-  — don't patch the local copy or the next re-vendor reverts it.
-- **`#FFFFFF` on the close-button hover has no token.** `buttons.css:45`. The DS has no on-danger
-  text colour (`--color-text-on-accent` is `#06101A`, for cyan). Needs either a DS token or a
-  documented exemption once the adherence lint runs.
+  `!important` declarations. The three accent/on-danger hexes at `:248`, `:268` and (via
+  `buttons.css:45`) the close-button hover are now tokenized. The slider-handle's `#FFFFFF`
+  border at `:249` stays raw and documented: it's a decorative contrast ring, not text/icon
+  content on a semantic background, and the DS's own reference `Slider.jsx` is a bare native
+  `<input type="range">` with no custom thumb styling to adopt a token from either.
+  `!important` and line count are unchanged; fixing those needs the component swap, not a token
+  swap. It exists because PrimeVue's theme is imported after our CSS. The durable fix is to
+  shrink it: `components/ds/` already has `LSelect`, `LSwitch`, `LInput` and `LSlider` at parity
+  with the PrimeVue components those rules target, and each swap deletes a block of overrides.
+  `Dialog`, `Card` and `Button` are *not* at parity — `LDialog` has no focus trap or scroll lock —
+  so those need DS work first.
 - **README screenshots are pre-redesign.** All five still show the old "AI Toolbox" branding and
   top-nav layout. `assets/screenshots/custom_themes.png` is orphaned (no longer referenced) and
   can be deleted. Recapturing needs a running app plus curated sample images.

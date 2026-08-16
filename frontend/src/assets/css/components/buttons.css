@@ -42,5 +42,5 @@
 
 .window-close-btn:hover {
     background: var(--color-danger, #F2665B) !important;
-    color: #FFFFFF !important;
+    color: var(--color-text-on-danger, #FFFFFF) !important;
 }

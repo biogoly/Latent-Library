@@ -246,7 +246,11 @@
 
 .p-slider .p-slider-handle {
     background: var(--color-accent-primary-hover, #67E0D8) !important;
-    /* No DS token for a white border exists yet (same gap as buttons.css:45); documented exemption. */
+    /* Documented exemption: this is a decorative contrast ring around the accent-filled handle,
+       not text/icon content on a semantic background, so --color-text-on-danger doesn't apply
+       here. The DS's own reference Slider (components/forms/Slider.jsx) is a bare native
+       <input type="range"> with no custom thumb styling at all, so there's no upstream token
+       to adopt for this either. */
     border: 2px solid #FFFFFF !important;
     width: 14px !important;
     height: 14px !important;
