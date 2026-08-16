@@ -33,6 +33,13 @@ LT is vanilla TS; LL is on PrimeVue 3, LMO on PrimeVue 4). Treat sibling repos a
 as a dependency: nothing here breaks if they change. What *is* worth keeping in step is the token
 files and the vendored skills — re-vendor rather than edit in place.
 
+As of `081f9fe`, `tokens/colors.css` and `tokens/effects.css` are byte-identical (modulo line
+endings/formatting) across the DS source and all three apps, including the `--color-text-on-danger`
+token and the removal of the stray `.dropzone-hint` component rule that had leaked into
+`effects.css`. Fix token gaps upstream in the DS repo first, then re-vendor into each app — don't
+patch a local copy, the next re-vendor silently reverts it. The DS repo isn't checked out inside
+this one; ask where it lives locally if you need to touch it.
+
 ### Repository map
 
 - `backend/src/main/java/com/nilsson/backend/`
