@@ -158,13 +158,44 @@ log lines), which previously let one watcher escape being recorded and therefore
 unreadable file left no trace anywhere and the caller silently fell through to a 15s timeout.
 Failures that the caller cannot observe belong at `WARN` with enough context to identify the file.
 
+### Thumbnailator silently renames files whose extension doesn't match the output format
+
+`FileImageSink.write()` (in `net.coobird.thumbnailator`, see its sources jar) checks whether the
+destination file's own extension matches the configured output format; if it doesn't, it appends
+the correct extension instead of failing. `ThumbnailService` wrote to `<hash>.tmp` with
+`.outputFormat("jpg")`, so every generated file actually landed at `<hash>.tmp.jpg` — and the
+atomic `Files.move(tempFile, destination, ...)` that followed always threw `NoSuchFileException`,
+since `<hash>.tmp` itself never existed. This failed **every** thumbnail generation,
+deterministically, not as a race; the WARN-level catch (above) swallowed it into a full-image
+fallback, so nothing looked obviously broken, and each failed attempt leaked an orphaned
+`*.tmp.jpg`.
+
+Fixed by naming the temp file `<hash>.tmp.jpg` so its own extension already matches the output
+format and Thumbnailator's rename never fires. **Anything writing through Thumbnailator's
+`toFile()` must give the destination an extension matching `.outputFormat(...)` up front** — it
+will not fail loudly if you don't.
+
+### `/library/scan` doesn't wait for the indexing it kicks off
+
+`IndexingService.indexFolder()` is fire-and-forget by design (`executor.submit`) so large folders
+don't block the request, but `LibraryController.scanFolder` queries the database for the folder's
+contents in the *same* request, before that background job has written anything. A folder opened
+for the first time can therefore return an empty page while indexing is still catching up.
+Nothing closed the loop: the periodic auto-refresh (`browser.js`'s `refreshCurrentFolder`) only
+acts once `files.length > 0`, so it could never recover from an empty list — the grid stayed
+blank until the folder was reopened manually. The indexing-status poll now detects `isIndexing`
+going `true -> false` while the current view is still empty and re-fetches once. Any other UI
+action that reads from the database right after triggering indexing needs the same follow-up.
+
 ### An undefined custom property fails silently — always write a fallback
 
 `background: var(--nope)` is not an error. The declaration is invalid at computed-value time, so
 the property falls back to its initial value: no console message, no build failure, just a
-transparent background. This is how Latent Model Organizer shipped a whole broken theme, and how
-`base.css:104`'s `.glass-panel::after` gloss overlay has never rendered — `--app-glass-gloss` has
-no definition anywhere in the repo and no fallback.
+transparent background. This is how Latent Model Organizer shipped a whole broken theme. The same
+trap sat undetected here too: `base.css`'s `.glass-panel::after` gloss overlay referenced
+`--app-glass-gloss`, a token defined nowhere, and rendered nothing for the rule's entire lifetime
+— nobody noticed because `.glass-panel` itself turned out to be applied nowhere either. Deleted
+once a repo-wide grep confirmed it was unused, rather than given a fallback it didn't need.
 
 The rule everywhere in `assets/css/`: `var(--token, sensible-fallback)`. The fallback must be the
 token's *current* value — a stale one (the old `var(--sidebar-width, 200px)` against a 224px
@@ -189,13 +220,6 @@ token) documents a dimension the system doesn't use and is worse than none.
 
 ## Open issues
 
-- **`.glass-panel::after` is dead decoration.** `base.css:100-107` paints a gloss overlay from
-  `--app-glass-gloss`, which is defined nowhere and has no fallback, so it has always rendered
-  nothing. Either define the token or delete the rule.
-- **`.glass-input` in `layout.css` is partly shadowed.** A scoped component rule
-  (`[data-v-c4bd1c5a]`, higher specificity, also `!important`) overrides its background to
-  `--color-surface-1`. Editing `layout.css` alone will not change how that input looks — check
-  the component's own `<style scoped>` first.
 - **The frontend has no test tooling at all.** No Vitest, no Vue Test Utils, no spec files, no
   `test` script. Every UI change is verified by eye against a rebuilt jar. That is the binding
   constraint on any component refactor — size the work accordingly, and consider adding Vitest

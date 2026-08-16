@@ -378,13 +378,6 @@ const cancelEdit = () => {
   box-shadow: var(--shadow-panel, 0 20px 60px -20px rgba(0,0,0,0.65));
 }
 
-.glass-input {
-  background: var(--color-surface-2, #23252F) !important;
-  border: 1px solid var(--color-border-default, rgba(255, 255, 255, 0.10)) !important;
-  color: var(--color-text-primary, #F2F3F7) !important;
-  border-radius: var(--radius-sm, 6px) !important;
-}
-
 .glass-box {
   background: var(--color-surface-2, #23252F);
   border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.06));
