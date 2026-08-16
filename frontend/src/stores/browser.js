@@ -146,11 +146,21 @@ export const useBrowserStore = defineStore('browser', {
                 try {
                     const res = await api.get('/library/indexing-status');
                     const status = res.data;
-                    
+
+                    const wasIndexing = this.isIndexing;
                     this.isIndexing = status.isIndexing;
                     if (status.isIndexing || status.totalFiles > 0) {
                         this.totalFilesToScan = status.totalFiles;
                         this.filesProcessed = status.processedFiles;
+                    }
+
+                    // A folder opened for the first time returns an empty page while its
+                    // background index is still running (POST /library/scan doesn't wait for
+                    // it). Once that scan finishes, re-fetch so the grid doesn't stay empty
+                    // until the user clicks the folder again.
+                    if (wasIndexing && !this.isIndexing && !this.isLoading && this.files.length === 0
+                        && this.lastFolderPath && !this.searchQuery && !this.activeCollection) {
+                        await this.loadInitialFolder(this.lastFolderPath);
                     }
                 } catch (e) {
                     console.debug("Indexing poll failed (ignoring):", e.message);
