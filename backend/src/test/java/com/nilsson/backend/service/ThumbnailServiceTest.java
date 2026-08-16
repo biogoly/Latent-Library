@@ -5,6 +5,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,14 +51,12 @@ class ThumbnailServiceTest {
     @Test
     @DisplayName("getThumbnail should generate a new file if not cached")
     void getThumbnail_ShouldGenerateFile_WhenMissing() throws IOException {
-        File source = new File("src/test/resources/test_image.jpg");
-
-        if (!source.exists()) {
-            return;
-        }
+        File source = tempDir.resolve("source.jpg").toFile();
+        BufferedImage image = new BufferedImage(64, 64, BufferedImage.TYPE_INT_RGB);
+        ImageIO.write(image, "jpg", source);
 
         File thumb = thumbnailService.getThumbnail(source);
-        assertNotNull(thumb);
+        assertNotNull(thumb, "thumbnail generation must not silently fail");
         assertTrue(thumb.exists());
         assertTrue(thumb.getName().endsWith(".jpg"));
     }

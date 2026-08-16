@@ -154,7 +154,13 @@ public class ThumbnailService {
     }
 
     private void generateThumbnailAtomic(File source, File destination, String hash) throws IOException {
-        Path tempFile = thumbnailCacheDir.resolve(hash + ".tmp");
+        // Thumbnailator's FileImageSink appends the output format's extension whenever the
+        // destination's own extension doesn't match it (net.coobird.thumbnailator.tasks.io.
+        // FileImageSink#write). ".tmp" never matches "jpg", so a plain "<hash>.tmp" target
+        // silently became "<hash>.tmp.jpg" on disk and the move below always threw
+        // NoSuchFileException. Giving the temp file a ".jpg" extension up front satisfies that
+        // check so Thumbnailator writes to the exact path we move from.
+        Path tempFile = thumbnailCacheDir.resolve(hash + ".tmp.jpg");
         try {
             Thumbnails.of(source)
                     .size(thumbnailSize, thumbnailSize)
