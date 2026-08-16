@@ -75,12 +75,12 @@ const handleClick = (e) => {
 
 /* Variants */
 .l-button.primary {
-  background: var(--color-accent-primary, #4FD8D0);
-  color: var(--color-text-on-accent, #06101A);
-  border: 1px solid transparent;
+  background: var(--color-surface-3, #262835);
+  color: var(--color-text-primary, #F2F3F7);
+  border: 1px solid var(--color-border-strong, rgba(255, 255, 255, 0.18));
 }
 .l-button.primary:hover:not(:disabled) {
-  background: var(--color-accent-primary-hover, #67E0D8);
+  border-color: var(--color-accent-primary, #4FD8D0);
   box-shadow: var(--glow-primary, 0 0 0 3px rgba(79, 216, 208, 0.16));
 }
 

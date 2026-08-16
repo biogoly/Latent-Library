@@ -215,9 +215,6 @@ token) documents a dimension the system doesn't use and is worse than none.
   PrimeVue components those rules target, and each swap deletes a block of overrides. `Dialog`,
   `Card` and `Button` are *not* at parity — `LDialog` has no focus trap or scroll lock — so those
   need DS work first.
-- **`LButton`'s `primary` variant diverges from the DS reference.** The spec makes `primary`
-  `--color-surface-3` plus a strong border and reserves the accent fill for `cta`; ours fills
-  solid accent, which dilutes the "one gradient CTA per screen" restraint.
 - **`.dropzone-hint` is a component rule inside a token file.** `latent/tokens/effects.css:17`.
   It came in with the vendored DS and the DS's own guide forbids it. Fix upstream, then re-vendor
   — don't patch the local copy or the next re-vendor reverts it.
