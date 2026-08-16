@@ -204,8 +204,12 @@ token) documents a dimension the system doesn't use and is worse than none.
   `_adherence.oxlintrc.json`, which lints exactly the raw-hex and magic-px violations that keep
   reappearing, but no npm script runs it. Wiring it into `npm run lint` is the cheapest way to
   stop the drift recurring.
-- **`primevue-overrides.css` is the weak point of the CSS layer.** 385 lines, 212 `!important`
-  declarations, and three raw hexes (`#67E0D8`, `#FFFFFF` at `:248-249`, `#4FD8D0` at `:268`).
+- **`primevue-overrides.css` is the weak point of the CSS layer.** 385 lines and 212
+  `!important` declarations. The two accent hexes at `:248` and `:268` are now tokenized
+  (`var(--color-accent-primary-hover, ...)` / `var(--color-accent-primary, ...)`); the
+  `#FFFFFF` slider-handle border at `:249` stays raw and documented — same gap as the
+  close-button hover below, no DS token for an on-accent white exists yet. `!important` and
+  line count are unchanged; fixing those needs the component swap, not a token swap.
   It exists because PrimeVue's theme is imported after our CSS. The durable fix is to shrink it:
   `components/ds/` already has `LSelect`, `LSwitch`, `LInput` and `LSlider` at parity with the
   PrimeVue components those rules target, and each swap deletes a block of overrides. `Dialog`,

@@ -245,7 +245,8 @@
 }
 
 .p-slider .p-slider-handle {
-    background: #67E0D8 !important;
+    background: var(--color-accent-primary-hover, #67E0D8) !important;
+    /* No DS token for a white border exists yet (same gap as buttons.css:45); documented exemption. */
     border: 2px solid #FFFFFF !important;
     width: 14px !important;
     height: 14px !important;
@@ -265,7 +266,7 @@
 
 .p-slider .p-slider-handle:hover {
     transform: scale(1.2) !important;
-    background: #4FD8D0 !important;
+    background: var(--color-accent-primary, #4FD8D0) !important;
 }
 
 
