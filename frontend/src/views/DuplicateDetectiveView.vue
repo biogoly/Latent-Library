@@ -35,6 +35,40 @@ const currentPair = computed(() => pairs.value[currentIndex.value] || null);
 const leftImage = computed(() => currentPair.value ? authenticatedUrl(`/api/images/content?path=${encodeURIComponent(currentPair.value.left.path)}`) : null);
 const rightImage = computed(() => currentPair.value ? authenticatedUrl(`/api/images/content?path=${encodeURIComponent(currentPair.value.right.path)}`) : null);
 
+// Mirrors DuplicateService#parseResolution/parseFileSize on the backend so the "Best
+// Resolution" banner agrees with what the BEST_RESOLUTION batch-resolve strategy would pick.
+const parseResolutionPixels = (resolution) => {
+  if (!resolution || !resolution.includes('x')) return 0;
+  const [w, h] = resolution.split('x').map((part) => parseInt(part.trim(), 10));
+  return Number.isFinite(w) && Number.isFinite(h) ? w * h : 0;
+};
+
+const parseFileSizeBytes = (size) => {
+  if (!size) return 0;
+  const clean = size.toUpperCase().replace(/\s/g, '');
+  const value = parseFloat(clean);
+  if (!Number.isFinite(value)) return 0;
+  if (clean.endsWith('MB')) return value * 1024 * 1024;
+  if (clean.endsWith('KB')) return value * 1024;
+  if (clean.endsWith('B')) return value;
+  return 0;
+};
+
+const bestSide = computed(() => {
+  if (!currentPair.value) return null;
+
+  const leftPixels = parseResolutionPixels(currentPair.value.left.metadata?.Resolution);
+  const rightPixels = parseResolutionPixels(currentPair.value.right.metadata?.Resolution);
+
+  if (leftPixels === 0 && rightPixels === 0) return null;
+  if (leftPixels !== rightPixels) return leftPixels > rightPixels ? 'left' : 'right';
+
+  const leftBytes = parseFileSizeBytes(currentPair.value.left.metadata?.FileSize);
+  const rightBytes = parseFileSizeBytes(currentPair.value.right.metadata?.FileSize);
+  if (leftBytes === rightBytes) return null;
+  return leftBytes > rightBytes ? 'left' : 'right';
+});
+
 const loadStatus = async () => {
   try {
     const res = await api.get('/duplicates/status');
@@ -178,6 +212,7 @@ onUnmounted(() => {
         :rating="currentPair.left.rating"
         title="Left (1)"
         actionLabel="Keep Left (1)"
+        :highlightBest="bestSide === 'left'"
         @action="keepLeft"
       />
 
@@ -207,6 +242,7 @@ onUnmounted(() => {
         :rating="currentPair.right.rating"
         title="Right (2)"
         actionLabel="Keep Right (2)"
+        :highlightBest="bestSide === 'right'"
         @action="keepRight"
       />
     </div>

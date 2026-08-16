@@ -7,14 +7,15 @@ import { computed } from 'vue';
 import InputText from 'primevue/inputtext';
 import LButton from '@/components/ds/LButton.vue';
 import api from '@/services/api';
-import { Folder, Check, Star } from 'lucide-vue-next';
+import { Folder, Check, Star, Trophy } from 'lucide-vue-next';
 
 const props = defineProps({
   metadata: { type: Object, required: false },
   path: { type: String, required: false },
   title: { type: String, required: false },
   actionLabel: { type: String, required: false },
-  rating: { type: Number, default: 0 }
+  rating: { type: Number, default: 0 },
+  highlightBest: { type: Boolean, default: false }
 });
 
 const emit = defineEmits(['action']);
@@ -111,16 +112,22 @@ const openFileLocation = async () => {
         </div>
       </div>
 
-      <LButton
-        v-if="actionLabel"
-        variant="primary"
-        size="md"
-        class="mt-auto w-full"
-        @click="emit('action')"
-      >
-        <template #icon><Check :size="16" /></template>
-        {{ actionLabel }}
-      </LButton>
+      <div v-if="actionLabel" class="mt-auto w-full flex flex-column gap-2">
+        <div v-if="highlightBest" class="best-banner-ds flex align-items-center justify-content-center gap-2">
+          <Trophy :size="14" />
+          <span>Best Resolution</span>
+        </div>
+
+        <LButton
+          variant="primary"
+          size="md"
+          class="w-full"
+          @click="emit('action')"
+        >
+          <template #icon><Check :size="16" /></template>
+          {{ actionLabel }}
+        </LButton>
+      </div>
     </template>
 
     <div v-else class="flex-grow-1 flex align-items-center justify-content-center text-secondary italic text-sm text-center">
@@ -199,5 +206,18 @@ const openFileLocation = async () => {
 
 .text-secondary {
   color: var(--color-text-secondary, #9294A3) !important;
+}
+
+.best-banner-ds {
+  font-family: var(--font-sans, Inter, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-accent-primary-bg, rgba(79, 216, 208, 0.12));
+  color: var(--color-accent-primary, #4FD8D0);
+  border: 1px solid var(--color-accent-primary, #4FD8D0);
 }
 </style>
