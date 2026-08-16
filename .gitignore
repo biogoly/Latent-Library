@@ -23,6 +23,7 @@ frontend/data/
 
 # AI Assistant Junctions & Kits
 .claude/skills/
+.claude/settings.local.json
 drop-in-brain-main/
 
 # Documentation & Design System Repositories
