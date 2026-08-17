@@ -13,8 +13,24 @@ const {spawn} = require('child_process');
 const http = require('http');
 const fs = require('fs');
 
+// AppImages self-mount to a read-only, ephemeral FUSE mountpoint (e.g.
+// /tmp/.mount_XXXXXX/) at runtime, so app.getPath('exe') points inside that
+// mount rather than at the real file on disk. APPIMAGE is set by the AppImage
+// runtime to the actual .AppImage path, and PORTABLE_EXECUTABLE_DIR is set by
+// electron-builder's Windows portable target. Both must be checked before
+// falling back to app.getPath('exe').
+function resolveAppDataDir() {
+    if (process.env.PORTABLE_EXECUTABLE_DIR) {
+        return process.env.PORTABLE_EXECUTABLE_DIR;
+    }
+    if (process.env.APPIMAGE) {
+        return path.dirname(process.env.APPIMAGE);
+    }
+    return path.dirname(app.getPath('exe'));
+}
+
 process.on('uncaughtException', (error) => {
-    const errorLogPath = path.join(path.dirname(app.getPath('exe')), 'startup_error.log');
+    const errorLogPath = path.join(resolveAppDataDir(), 'startup_error.log');
     const message = `[Uncaught Exception]: ${error.name}: ${error.message}\n${error.stack}\n`;
     try {
         fs.appendFileSync(errorLogPath, message);
@@ -41,12 +57,7 @@ function getBackendPaths() {
         javaExe = path.join(process.resourcesPath, 'runtime', 'bin', process.platform === 'win32' ? 'java.exe' : 'java');
         jarPath = path.join(process.resourcesPath, 'runtime', 'app', JAR_NAME);
         workingDir = path.join(process.resourcesPath, 'runtime', 'app');
-
-        if (process.env.PORTABLE_EXECUTABLE_DIR) {
-            appDataDir = process.env.PORTABLE_EXECUTABLE_DIR;
-        } else {
-            appDataDir = path.dirname(app.getPath('exe'));
-        }
+        appDataDir = resolveAppDataDir();
     } else {
         javaExe = 'java';
         jarPath = path.join(__dirname, '../backend/target', JAR_NAME);
