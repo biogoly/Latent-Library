@@ -81,12 +81,3 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run dist
-
-      - name: Upload Artifacts
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            electron/dist/*.exe
-            electron/dist/*.AppImage
-            electron/dist/*.dmg
