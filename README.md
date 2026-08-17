@@ -11,46 +11,64 @@
 ![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
 ![Electron](https://img.shields.io/badge/Electron-31-47848F?style=for-the-badge&logo=electron&logoColor=white)
 
-A robust, high-performance desktop asset manager designed specifically for the AI image generation ecosystem. It unifies metadata parsing across fragmented formats, providing **SQL-backed search**, **Smart Collections**, **live folder monitoring**, and **AI-powered interrogation** in a modern, multi-themed desktop interface.
+A high-performance desktop asset manager built for the AI image generation ecosystem. It unifies metadata parsing across fragmented formats, providing **SQL-backed search**, **Smart Collections**, **live folder monitoring**, and **AI-powered interrogation** in a modern, multi-themed desktop interface.
 
 ---
 
 ## 📸 Interface
 
 <p align="center">
-  <img src="frontend/src/assets/screenshots/hero_view.png" width="800" alt="Main Browser and Metadata Sidebar">
+  <img src="frontend/src/assets/screenshots/hero.jpg" width="800" alt="Main Browser and Metadata Sidebar">
   <br>
   <i>Unified grid gallery with instant SQLite search and dynamic metadata parsing.</i>
+</p>
+
+<p align="center">
+  <img src="frontend/src/assets/screenshots/gallery.jpg" width="800" alt="Virtualized Grid Gallery with AI Tags">
+  <br>
+  <i>Virtualized grid browsing with AI-tag overlays, model/sampler/LoRA filters, and star ratings.</i>
 </p>
 
 ### Rapid Organization & Inspection
 
 <p align="center">
-  <img src="frontend/src/assets/screenshots/speed_sorter.png" width="800" alt="Speed Sorter">
+  <img src="frontend/src/assets/screenshots/duplicate.jpg" width="800" alt="Duplicate Detective">
   <br>
-  <i><b>Speed Sorter:</b> Rapidly categorize massive generation dumps using keyboard hotkeys.</i>
+  <i><b>Duplicate Detective:</b> Identify and manage identical or similar generations across your entire library.</i>
 </p>
 
 <p align="center">
-  <img src="frontend/src/assets/screenshots/comparator.png" width="800" alt="Image Comparator Slider">
+  <img src="frontend/src/assets/screenshots/comparator.jpg" width="800" alt="Image Comparator Slider">
   <br>
   <i><b>Image Comparator:</b> Pixel-peep fine details between two generations with the draggable slider.</i>
 </p>
 
 <details>
-<summary><b>View More Features (Collections, Duplicate Detective & Custom Themes)</b></summary>
+<summary><b>View More Features (Collections, Speed Sorter, Scrubber & Settings)</b></summary>
 <br>
 
 <p align="center">
-  <img src="frontend/src/assets/screenshots/dynamic_folders.png" width="800" alt="Smart Collections">
+  <img src="frontend/src/assets/screenshots/collections.png" width="800" alt="Smart Collections">
   <br>
   <i><b>Smart Collections:</b> Create dynamic, auto-populating folders based on complex metadata filters.</i>
 </p>
 
 <p align="center">
-  <img src="frontend/src/assets/screenshots/duplicate_finder.png" width="800" alt="Duplicate Finder">
+  <img src="frontend/src/assets/screenshots/sorter.jpg" width="800" alt="Speed Sorter">
   <br>
-  <i><b>Duplicate Detective:</b> Identify and manage identical or similar generations across your entire library.</i>
+  <i><b>Speed Sorter:</b> Rapidly categorize massive generation dumps using keyboard hotkeys.</i>
+</p>
+
+<p align="center">
+  <img src="frontend/src/assets/screenshots/scrubber.png" width="800" alt="Metadata Scrubber">
+  <br>
+  <i><b>Metadata Scrubber:</b> Strip hidden EXIF, prompts, and workflow data before sharing an image.</i>
+</p>
+
+<p align="center">
+  <img src="frontend/src/assets/screenshots/settings.png" width="500" alt="Settings">
+  <br>
+  <i><b>Settings:</b> Control scanning behavior, manage the local database, and adjust appearance.</i>
 </p>
 
 </details>
@@ -63,7 +81,7 @@ Designed for the privacy-conscious artist, this application operates on a strict
 
 * **Standalone Desktop App:** Runs as a single `.exe` (Windows), `.AppImage` (Linux), or `.dmg` (macOS). No installer required.
 * **Bundled Runtime:** Includes a self-contained Java 21 environment. No system-wide Java installation is required.
-* **Portable Data:** All data (database, thumbnails, settings) is stored in a local `data/` folder next to the executable (or in a standard user data location on macOS), making it easy to backup or move.
+* **Portable Data:** All data (database, thumbnails, settings) is stored in a local `data/` folder next to the executable, including on macOS (it sits beside the app bundle, not in `~/Library/Application Support`), making it easy to backup or move.
 * **100% Offline / No Telemetry:** There are no "cloud sync" features, analytics, or background API calls. Your prompts and generation data never leave your machine.
 * **Privacy Scrubbing:** Integrated **Scrubber View** allows you to sanitize images before sharing. It strips hidden generation metadata (Prompts, ComfyUI Workflows, Seed data) while preserving visual quality.
 
@@ -73,7 +91,7 @@ Designed for the privacy-conscious artist, this application operates on a strict
 
 * **Universal Metadata Engine:** Advanced parsing strategies for the entire stable diffusion ecosystem.
   * **ComfyUI:** Traverses complex node graphs (recursive inputs) and API formats to identify the true Sampler, Scheduler, and LoRAs used.
-  * **Automatic1111 / Forge:** Robust parsing of standard "Steps: XX, Sampler: XX" text blocks.
+  * **Automatic1111 / Forge:** Parses standard "Steps: XX, Sampler: XX" text blocks.
   * **Others:** Native support for **InvokeAI**, **SwarmUI**, and **NovelAI**.
   * *Note: Metadata extraction requires images to contain embedded EXIF or PNG text chunks (standard for most AI generators).*
 * **AI Auto-Tagger:** Integrated **WD14 ONNX** model for local image interrogation. Automatically generate descriptive tags for your library without external API calls.
@@ -88,12 +106,12 @@ Designed for the privacy-conscious artist, this application operates on a strict
 * **Performance:**
   * **FTS5 Search:** Powered by SQLite's Full-Text Search for near-instant results across tens of thousands of images.
   * **Virtualization:** Uses virtual scrolling to handle massive folders without UI lag.
-  * **Project Loom:** Leverages Java 21 Virtual Threads for non-blocking background indexing.
+  * **Project Loom:** Uses Java 21 Virtual Threads for non-blocking background indexing.
 * **Modern UX & Customization:**
   * **Latent Design System:** A unified dark interface (cyan & violet accents) built from a shared component library for visual consistency across every tool view.
   * **Image Comparator:** Side-by-side comparison tool with a draggable slider.
-* **Real-Time Hot Folder Sync:** Keep the app open alongside your generator. The UI automatically polls and injects new images into your gallery in real-time as they are generated, without locking the database.
-* **Native WSL & Network Drive Support:** Seamlessly pin and monitor output folders from Dockerized ComfyUI/Automatic1111 environments running inside Windows Subsystem for Linux (`\\wsl$\`).
+* **Real-Time Hot Folder Sync:** Keep the app open alongside your generator. A background file watcher detects new images and injects them into your gallery in real-time as they are generated, without locking the database.
+* **Network Drive & WSL Path Support:** Folder monitoring works with any path your OS can browse to, including mapped network drives and Windows Subsystem for Linux shares (`\\wsl$\`). Handy for pinning Dockerized ComfyUI/Automatic1111 output folders.
 
 ---
 
@@ -159,19 +177,19 @@ The application is built as a highly concurrent hybrid desktop app, combining a 
 Latent Library is completely portable. To update to a new version without losing your collections, tags, or database:
 1. **Download** the latest release for your OS.
 2. **Replace** your old executable with the new one.
-3. **Keep your `data/` folder intact.** As long as the new executable is placed next to your existing `data/` folder, it will seamlessly load your existing library.
+3. **Keep your `data/` folder intact.** As long as the new executable is placed next to your existing `data/` folder, it will load your existing library automatically.
 
 ---
 
 ## 📜 License
 
-Distributed under the **MIT License**. Free for personal use.
+Distributed under the **MIT License with the Commons Clause**. Free to use, modify, and share. The Commons Clause restricts *selling* the Software or offering it as a paid hosted/consulting service. See [LICENSE](LICENSE) for the full text.
 
 ---
 
 ## 💖 Support the Project
 
-If **Latent Library** has streamlined your workflow, consider supporting its ongoing development.
+If **Latent Library** has been useful to you, consider supporting its ongoing development.
 
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=github-sponsors)](https://github.com/sponsors/erroralex)
 [![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/error_alex)

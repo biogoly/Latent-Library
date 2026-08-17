@@ -147,7 +147,7 @@ const saveCollection = async () => {
     displayCreateDialog.value = false;
     resetForm();
     await fetchCollections();
-    store.triggerNavRefresh();
+    store.refreshNav();
   } catch (error) {
     console.error('Error saving collection:', error);
   }
@@ -189,7 +189,7 @@ const confirmDeleteCollection = async (name) => {
     await api.delete(`/collections/${encodeURIComponent(name)}`);
     toast.add({ severity: 'success', summary: 'Deleted', detail: `Collection "${name}" removed.`, life: 3000 });
     await fetchCollections();
-    store.triggerNavRefresh();
+    store.refreshNav();
   } catch (e) {
     console.error('Failed to delete collection', e);
   }

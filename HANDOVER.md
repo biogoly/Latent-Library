@@ -208,6 +208,23 @@ The rule everywhere in `assets/css/`: `var(--token, sensible-fallback)`. The fal
 token's *current* value — a stale one (the old `var(--sidebar-width, 200px)` against a 224px
 token) documents a dimension the system doesn't use and is worse than none.
 
+### A renamed store action can fail silently inside a `try/catch`
+
+`CollectionsView.vue`'s `saveCollection`/`confirmDeleteCollection` called `store.triggerNavRefresh()`
+after creating/editing/deleting a collection, but `browser.js` only ever defined `refreshNav()` — no
+action named `triggerNavRefresh` existed. Both call sites wrap the whole operation in a bare
+`try { ... } catch (error) { console.error(...) }`, so the `TypeError` from calling an undefined
+method was swallowed after the real work (the API call, the toast, the grid refetch) had already
+succeeded. Nothing looked broken from `CollectionsView`: the grid updated, the toast fired. The only
+symptom was `FolderNav.vue`'s sidebar tree, which watches `store.navRefreshKey` and never saw it
+increment, so newly created or deleted collections never appeared there until a full reload.
+
+Fixed by renaming the call sites to `store.refreshNav()`. The general lesson: a `catch` that only
+logs is enough to hide a plain typo indefinitely, because the visible parts of the operation had
+already committed before the throw. When a Pinia action is renamed, grep the whole `views/`/
+`components/` tree for the old name — nothing enforces the store's public method names at
+compile time here (no TypeScript).
+
 ### PrimeVue and Vue gotchas
 
 - **Tooltip on a `Dropdown` throws.** PrimeVue resolves a tooltip target as
@@ -247,12 +264,18 @@ token) documents a dimension the system doesn't use and is worse than none.
   with the PrimeVue components those rules target, and each swap deletes a block of overrides.
   `Dialog`, `Card` and `Button` are *not* at parity — `LDialog` has no focus trap or scroll lock —
   so those need DS work first.
-- **README screenshots are pre-redesign.** All five still show the old "AI Toolbox" branding and
-  top-nav layout. `assets/screenshots/custom_themes.png` is orphaned (no longer referenced) and
-  can be deleted. Recapturing needs a running app plus curated sample images.
-- **Comparator star ratings are unverified visually.** `ComparisonMetadataPanel.vue` uses the same
-  Lucide `Star` pattern verified elsewhere, but populating the Comparator needs a native file
-  dialog, so it was never seen rendering. Worth a glance when that view is next opened.
+- ~~README screenshots are pre-redesign.~~ Recaptured and re-vendored: `hero.jpg`, `gallery.jpg`,
+  `sorter.jpg`, `comparator.jpg`, `collections.png`, `duplicate.jpg`, `scrubber.png`, `settings.png`
+  now live in `frontend/src/assets/screenshots/` and `README.md` points at all eight (Gallery,
+  Scrubber and Settings were previously undocumented entirely). The README's other copy was also
+  fact-checked against the code in the same pass: the license line was corrected to MIT + Commons
+  Clause (the actual `LICENSE` content — plain "MIT License" was wrong), the macOS "standard user
+  data location" claim was removed (data always sits next to the app bundle, no
+  `~/Library/Application Support` branch in `electron/main.js`), and the WSL claim was reworded
+  since there's no WSL-specific parsing anywhere in `PathService` — it works only because folder
+  access is fully generic.
+- ~~Comparator star ratings are unverified visually.~~ Confirmed rendering correctly in the new
+  `comparator.jpg` screenshot (star row under each side's metadata panel).
 - **`development` looks abandoned.** It is 53 commits behind `main`, contributes nothing unique,
   and was last touched on 2026-03-01. No workflow documented here uses it (unlike Latent Model
   Organizer, where releases branch from `development`). Either fast-forward it to `main` or delete
