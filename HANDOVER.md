@@ -241,6 +241,15 @@ already committed before the throw. When a Pinia action is renamed, grep the who
 `components/` tree for the old name — nothing enforces the store's public method names at
 compile time here (no TypeScript).
 
+### The splash screen has its own copy of the brand mark
+
+`electron/splash.html` does not reference `frontend/src/assets/latent-mark.svg` — it has its own
+hand-written `<svg>` inline in the HTML, which still had the old single-letter "L" mark after the
+titlebar/icon assets were updated to the new "LL" monogram. Nothing wires the splash screen to the
+shared asset, so a brand-mark change that only touches `latent-mark.svg` and `icon.png` ships with
+stale branding for however long the splash window is visible. If the mark changes again, grep the
+repo for the SVG path data rather than assuming the shared asset files cover every surface.
+
 ### PrimeVue and Vue gotchas
 
 - **Tooltip on a `Dropdown` throws.** PrimeVue resolves a tooltip target as
