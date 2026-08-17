@@ -103,6 +103,22 @@ cd backend  && ./mvnw clean package -DskipTests
 `clean` fails with "Failed to delete backend.jar" if a backend is still running — stop it first,
 and confirm the jar's timestamp actually moved before trusting what you see on screen.
 
+### `app.getPath('exe')` lies about the app's location inside an AppImage
+
+An AppImage self-mounts its contents to a temporary, read-only FUSE mountpoint (something like
+`/tmp/.mount_XXXXXX/`) at launch. Inside that mount, `app.getPath('exe')` resolves to the
+Electron binary *inside the mount*, not to the real `.AppImage` file's location on disk. Every
+Linux user hit this on first launch: `getBackendPaths()` used `path.dirname(app.getPath('exe'))`
+as the fallback for `appDataDir`, so it tried to `mkdir` a `data/` folder inside that read-only,
+ephemeral mount and failed with `ENOENT` before the backend could even start.
+
+`electron/main.js`'s `resolveAppDataDir()` now checks `process.env.APPIMAGE` (set by the AppImage
+runtime to the real file path) before falling back to `app.getPath('exe')`, the same way it
+already special-cased `PORTABLE_EXECUTABLE_DIR` for the Windows portable build. **Any code that
+needs "the directory the app is running from" must go through `resolveAppDataDir()`**, never
+`app.getPath('exe')` directly — the uncaught-exception handler's `startup_error.log` path had the
+identical bug and was fixed the same way.
+
 ### Testing against a real backend in a plain browser
 
 The backend binds a **random port per launch** and requires a handshake token
