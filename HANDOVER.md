@@ -276,10 +276,6 @@ compile time here (no TypeScript).
   access is fully generic.
 - ~~Comparator star ratings are unverified visually.~~ Confirmed rendering correctly in the new
   `comparator.jpg` screenshot (star row under each side's metadata panel).
-- **`development` looks abandoned.** It is 53 commits behind `main`, contributes nothing unique,
-  and was last touched on 2026-03-01. No workflow documented here uses it (unlike Latent Model
-  Organizer, where releases branch from `development`). Either fast-forward it to `main` or delete
-  it — leaving it stale invites someone to branch from it by mistake.
 
 ---
 
