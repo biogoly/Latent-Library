@@ -21,7 +21,7 @@ and an ONNX-powered WD14 auto-tagger.
 | Desktop shell | Electron 31 | `electron/` |
 | Database | SQLite + Flyway migrations | `backend/data/` |
 
-App version `1.1.1`. Active branch is `main`.
+App version `1.2.0`. Active branch is `main`.
 
 ### Place in the Latent suite
 
@@ -249,6 +249,27 @@ titlebar/icon assets were updated to the new "LL" monogram. Nothing wires the sp
 shared asset, so a brand-mark change that only touches `latent-mark.svg` and `icon.png` ships with
 stale branding for however long the splash window is visible. If the mark changes again, grep the
 repo for the SVG path data rather than assuming the shared asset files cover every surface.
+
+### Re-releasing an existing tag means deleting it first, and CI double-published on top of it
+
+Moving `v1.2.0` to include the icon fixes required deleting the tag both locally and on `origin`
+and re-pushing it at the new commit — `git tag -f` alone does not move a tag that's already been
+pushed. GitHub's existing Release object survives a tag delete/recreate and just re-associates
+with whatever commit the tag now points to, but its attached assets don't update themselves; only
+a fresh CI run (`.github/workflows/build.yml` triggers on `push: tags: v*`) replaces them.
+
+That run exposed a latent bug: `.github/workflows/build.yml` published to the release **twice** —
+once via `electron-builder`'s own `publish` config (`electron/package.json`, active whenever
+`GH_TOKEN` is set on the `npm run dist` step) and again via a separate `softprops/action-gh-release`
+step uploading the same `electron/dist/*` globs. The first upload always wins; the second always
+422s with `already_exists`, permanently marking the Linux job "failed" even on a fully successful
+release. Removed the redundant `softprops/action-gh-release` step — `electron-builder` alone is
+sufficient since `publish` is already configured. Don't re-add a second upload step without
+removing the `GH_TOKEN` from the `Build Electron App` step first, or the same conflict returns.
+
+Separately, a mid-release GitHub API partial outage caused two prior attempts to fail on transient
+`503`s during asset overwrite — unrelated to the double-publish bug, but easy to conflate with it
+when triaging a failed run. Check `githubstatus.com` before assuming a CI failure is code-related.
 
 ### PrimeVue and Vue gotchas
 
