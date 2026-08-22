@@ -14,7 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'update:isRecursive', 'update:autoShowLatest', 'clearDb', 'reindex', 'clearModels', 'clearTags', 'clearUnorganized', 'clearThumbnails', 'openDataFolder']);
 
-const appVersion = ref('1.2.0');
+const appVersion = ref('1.2.1');
 
 const openKofi = () => {
   const url = 'https://ko-fi.com/error_alex';
