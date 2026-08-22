@@ -2,7 +2,13 @@
 <configuration>
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
 
-    <property name="LOG_PATH" value="data/logs"/>
+    <!-- Must track app.data.dir (see PortFileWriter, FileSystemService, etc.) rather than a
+         relative path: logback initializes before the Spring context, so a relative path here
+         resolves against the JVM's actual working directory, not the writable data directory
+         Electron resolves via resolveAppDataDir(). Inside a packaged AppImage that working
+         directory is the read-only FUSE mount, so a relative LOG_PATH fails outright. -->
+    <springProperty scope="context" name="APP_DATA_DIR" source="app.data.dir" defaultValue="."/>
+    <property name="LOG_PATH" value="${APP_DATA_DIR}/data/logs"/>
     <property name="LOG_FILE" value="${LOG_PATH}/app.log"/>
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

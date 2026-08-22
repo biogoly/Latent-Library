@@ -119,6 +119,34 @@ needs "the directory the app is running from" must go through `resolveAppDataDir
 `app.getPath('exe')` directly — the uncaught-exception handler's `startup_error.log` path had the
 identical bug and was fixed the same way.
 
+### logback-spring.xml had its own, unrelated hardcoded relative path
+
+Fixing `resolveAppDataDir()` (above) was not sufficient — Linux users still hit a crash
+immediately after a working `App Data Dir` was logged and the data folder was created
+([#86](https://github.com/erroralex/Latent-Library/issues/86)). `logback-spring.xml` initializes
+**before** the Spring context is up, so its `LOG_PATH` property (`data/logs`, unqualified) never
+saw `app.data.dir` — it resolved against the JVM's actual working directory instead, which for a
+packaged app is `workingDir` (`resourcesPath/runtime/app`), not the writable dir Electron computed.
+Inside an AppImage that's the read-only FUSE mount, so `RollingFileAppender` failed to create
+`data/logs` and the whole boot aborted with a `Logback configuration error` before any endpoint
+came up. Every *other* consumer of the data directory (`PortFileWriter`, `FileSystemService`,
+`SystemController`, …) reads `app.data.dir` via `@Value("${app.data.dir:.}")` — logback alone had
+its own untied copy of the same concept.
+
+Fixed with `<springProperty scope="context" name="APP_DATA_DIR" source="app.data.dir"
+defaultValue="."/>`, which Spring Boot's `LoggingApplicationListener` can resolve from the
+environment at the point logback initializes (command-line args like `--app.data.dir=...` are
+already present then). **Any new logback property that needs to point inside the app's data
+directory must go through this same `APP_DATA_DIR`, never a bare relative path** — a relative path
+here is silently correct in dev (cwd == data dir) and silently broken in every packaged build whose
+working directory differs from its data directory, which is every platform, not just Linux.
+
+No automated regression test covers this: logback finishes initializing during
+`ApplicationEnvironmentPreparedEvent`, which fires before `@TestPropertySource`/`@SpringBootTest`
+property sources are attached, so a JVM-internal test can't easily observe where the file appender
+actually pointed. Verified manually instead — packaged jar run with `cwd` set to a directory
+distinct from `--app.data.dir`, confirming `app.log` is written under the latter, not the former.
+
 ### Testing against a real backend in a plain browser
 
 The backend binds a **random port per launch** and requires a handshake token
