@@ -299,6 +299,17 @@ Separately, a mid-release GitHub API partial outage caused two prior attempts to
 `503`s during asset overwrite — unrelated to the double-publish bug, but easy to conflate with it
 when triaging a failed run. Check `githubstatus.com` before assuming a CI failure is code-related.
 
+### Every tagged release lands as a GitHub draft and needs a manual publish
+
+`electron-builder`'s `publish` config (no explicit `draft` key) defaults to `draft: true`, and
+nothing in `build.yml` un-drafts it. A fresh tag push (confirmed again on `v1.2.1`) creates the
+Release object in a draft state at an ugly auto-generated URL
+(`/releases/tag/untagged-<hex>`) rather than `/releases/tag/vX.Y.Z`, even though `gh release view
+vX.Y.Z` finds it correctly by tag. It only gets the clean tag URL and becomes publicly visible once
+published — `gh release edit vX.Y.Z --draft=false` (or the "Publish release" button in the GitHub
+UI). Do this (and add release notes) as a normal last step of every release, not just when
+something looks broken.
+
 ### PrimeVue and Vue gotchas
 
 - **Tooltip on a `Dropdown` throws.** PrimeVue resolves a tooltip target as
