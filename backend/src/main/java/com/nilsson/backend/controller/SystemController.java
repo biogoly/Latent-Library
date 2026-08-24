@@ -1,5 +1,6 @@
 package com.nilsson.backend.controller;
 
+import com.nilsson.backend.config.AppConfig.AppInfo;
 import com.nilsson.backend.exception.ApplicationException;
 import com.nilsson.backend.exception.ResourceNotFoundException;
 import com.nilsson.backend.service.FtsService;
@@ -9,7 +10,6 @@ import com.nilsson.backend.service.IndexingService;
 import com.nilsson.backend.service.DatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -65,23 +65,22 @@ public class SystemController {
                             UserDataManager userDataManager,
                             IndexingService indexingService,
                             DatabaseService databaseService,
-                            @Value("${app.data.dir:.}") String appDataDir,
-                            @Value("${project.version:unknown}") String version) {
+                            AppInfo appInfo) {
         this.context = context;
         this.ftsService = ftsService;
         this.pathService = pathService;
         this.userDataManager = userDataManager;
         this.indexingService = indexingService;
         this.databaseService = databaseService;
-        this.appDataDir = appDataDir;
-        this.version = version;
+        this.appDataDir = appInfo.dataDir();
+        this.version = appInfo.version();
     }
 
     @PostMapping("/shutdown")
     public ResponseEntity<String> shutdown() {
         logger.info("Shutdown request received via API.");
 
-        new Thread(() -> {
+        Thread.ofVirtual().start(() -> {
             try {
                 Thread.sleep(500);
                 logger.info("Closing application context...");
@@ -90,7 +89,7 @@ public class SystemController {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
-        }).start();
+        });
 
         return ResponseEntity.ok("Shutting down");
     }

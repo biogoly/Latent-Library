@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for the Speed Sorter utility.
@@ -111,7 +110,7 @@ public class SpeedSorterController {
         List<String> paths = Arrays.stream(files)
                 .sorted((a, b) -> Long.compare(b.lastModified(), a.lastModified()))
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(paths);
     }

@@ -1,5 +1,6 @@
 package com.nilsson.backend.controller;
 
+import com.nilsson.backend.config.AppConfig.AppInfo;
 import com.nilsson.backend.service.FtsService;
 import com.nilsson.backend.service.PathService;
 import com.nilsson.backend.service.UserDataManager;
@@ -61,6 +62,9 @@ class SystemControllerTest {
 
     @MockBean
     private DataSource dataSource;
+
+    @MockBean
+    private AppInfo appInfo;
 
     @Test
     @DisplayName("POST /api/system/clear-database should invoke data manager")
