@@ -14,7 +14,6 @@ import java.io.File;
 import java.nio.file.InvalidPathException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for managing image collections, supporting both static and dynamic groupings.
@@ -68,14 +67,14 @@ public class CollectionController {
                             }
                         })
                         .filter(p -> p != null && !p.isBlank())
-                        .collect(Collectors.toList());
+                        .toList();
             } catch (Exception e) {
                 org.slf4j.LoggerFactory.getLogger(CollectionController.class)
                         .warn("Failed to generate preview for collection {}: {}", name, e.getMessage());
             }
 
             return new CollectionDTO(name, isSmart, previews);
-        }).collect(Collectors.toList());
+        }).toList();
 
         return ResponseEntity.ok(dtos);
     }
@@ -171,7 +170,7 @@ public class CollectionController {
         }
         return ResponseEntity.ok(dataManager.getFilesFromCollection(name).stream()
                 .map(File::getAbsolutePath)
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     @PostMapping("/images")
@@ -193,7 +192,7 @@ public class CollectionController {
                     }
                     return new ImageDTO(pathService.getNormalizedAbsolutePath(file), rating, model);
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(dtos);
     }

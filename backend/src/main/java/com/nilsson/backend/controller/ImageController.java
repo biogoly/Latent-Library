@@ -54,6 +54,12 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping("/api/images")
 public class ImageController {
 
+    private static final String COL_AI_TAGS = "ai_tags";
+    private static final String COL_USER_NOTES = "user_notes";
+    private static final String COL_CUSTOM_PROMPT = "custom_prompt";
+    private static final String COL_CUSTOM_NEGATIVE_PROMPT = "custom_negative_prompt";
+    private static final String COL_CUSTOM_MODEL = "custom_model";
+
     private final UserDataManager dataManager;
     private final PathService pathService;
     private final ThumbnailService thumbnailService;
@@ -115,16 +121,18 @@ public class ImageController {
         Map<String, Object> response = new HashMap<>(meta);
         response.put("rating", rating);
 
-        Map<String, Object> customData = jdbcClient.sql("SELECT id, ai_tags, user_notes, custom_prompt, custom_negative_prompt, custom_model FROM images WHERE file_path = ?")
+        Map<String, Object> customData = jdbcClient.sql("SELECT id, " + COL_AI_TAGS + ", " + COL_USER_NOTES
+                        + ", " + COL_CUSTOM_PROMPT + ", " + COL_CUSTOM_NEGATIVE_PROMPT + ", " + COL_CUSTOM_MODEL
+                        + " FROM images WHERE file_path = ?")
                 .param(pathService.getNormalizedAbsolutePath(file))
                 .query((rs, rowNum) -> {
                     Map<String, Object> map = new HashMap<>();
                     map.put("id", rs.getInt("id"));
-                    map.put("ai_tags", rs.getString("ai_tags") != null ? rs.getString("ai_tags") : "");
-                    map.put("user_notes", rs.getString("user_notes") != null ? rs.getString("user_notes") : "");
-                    map.put("custom_prompt", rs.getString("custom_prompt") != null ? rs.getString("custom_prompt") : "");
-                    map.put("custom_negative_prompt", rs.getString("custom_negative_prompt") != null ? rs.getString("custom_negative_prompt") : "");
-                    map.put("custom_model", rs.getString("custom_model") != null ? rs.getString("custom_model") : "");
+                    map.put(COL_AI_TAGS, rs.getString(COL_AI_TAGS) != null ? rs.getString(COL_AI_TAGS) : "");
+                    map.put(COL_USER_NOTES, rs.getString(COL_USER_NOTES) != null ? rs.getString(COL_USER_NOTES) : "");
+                    map.put(COL_CUSTOM_PROMPT, rs.getString(COL_CUSTOM_PROMPT) != null ? rs.getString(COL_CUSTOM_PROMPT) : "");
+                    map.put(COL_CUSTOM_NEGATIVE_PROMPT, rs.getString(COL_CUSTOM_NEGATIVE_PROMPT) != null ? rs.getString(COL_CUSTOM_NEGATIVE_PROMPT) : "");
+                    map.put(COL_CUSTOM_MODEL, rs.getString(COL_CUSTOM_MODEL) != null ? rs.getString(COL_CUSTOM_MODEL) : "");
                     return map;
                 }).optional().orElse(Map.of());
 

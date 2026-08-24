@@ -4,7 +4,6 @@ import com.nilsson.backend.exception.ApplicationException;
 import com.nilsson.backend.exception.ImageProcessingException;
 import com.nilsson.backend.exception.ResourceNotFoundException;
 import com.nilsson.backend.exception.ValidationException;
-import com.nilsson.backend.service.PathService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -48,10 +47,8 @@ import java.util.UUID;
 public class ScrubController {
 
     private final Path tempDir;
-    private final PathService pathService;
 
-    public ScrubController(@Value("${app.data.dir:.}") String appDataDir, PathService pathService) {
-        this.pathService = pathService;
+    public ScrubController(@Value("${app.data.dir:.}") String appDataDir) {
         this.tempDir = Paths.get(appDataDir).resolve("data/temp").toAbsolutePath().normalize();
         try {
             Files.createDirectories(tempDir);

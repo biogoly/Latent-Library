@@ -1,7 +1,8 @@
 package com.nilsson.backend.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * Controller responsible for orchestrating Single Page Application (SPA) routing and resource forwarding.
@@ -19,8 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class SpaController {
 
-    @RequestMapping(value = "/{path:[^\\.]*}")
-    public String redirect() {
+    @GetMapping(value = "/{path:[^\\.]*}")
+    public String redirect(@PathVariable String path) {
         return "forward:/index.html";
     }
 }

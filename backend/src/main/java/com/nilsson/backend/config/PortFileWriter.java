@@ -62,20 +62,26 @@ public class PortFileWriter implements ApplicationListener<WebServerInitializedE
 
             Files.writeString(tempPath, content);
 
-            // Restrict temp file to owner-read/write only before moving into place
-            try {
-                Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
-                Files.setPosixFilePermissions(tempPath, ownerOnly);
-            } catch (UnsupportedOperationException e) {
-                // Non-POSIX filesystem (e.g. Windows); skip permission enforcement
-                log.debug("POSIX file permissions not supported on this filesystem; skipping permission enforcement.");
-            }
+            restrictToOwner(tempPath);
 
             Files.move(tempPath, finalPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
 
             log.info("Handshake data written atomically to {}", finalPath);
         } catch (IOException e) {
             log.error("Failed to write atomic handshake file: {}", PORT_FILE, e);
+        }
+    }
+
+    /**
+     * Restricts the temp file to owner-read/write only before it is moved into place.
+     * No-op on non-POSIX filesystems (e.g. Windows).
+     */
+    private void restrictToOwner(Path tempPath) throws IOException {
+        try {
+            Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
+            Files.setPosixFilePermissions(tempPath, ownerOnly);
+        } catch (UnsupportedOperationException e) {
+            log.debug("POSIX file permissions not supported on this filesystem; skipping permission enforcement.");
         }
     }
 }

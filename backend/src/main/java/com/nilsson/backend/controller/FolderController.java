@@ -14,7 +14,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * REST Controller for file system navigation, directory traversal, and bookmark management.
@@ -57,7 +56,7 @@ public class FolderController {
         return ResponseEntity.ok(Arrays.stream(roots)
                 .filter(File::exists)
                 .map(f -> new FileDTO(f.getAbsolutePath(), f.getAbsolutePath(), true, false))
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     @GetMapping("/children")
@@ -90,7 +89,7 @@ public class FolderController {
                         f.isDirectory(),
                         false
                 ))
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(dtos);
     }
@@ -99,7 +98,7 @@ public class FolderController {
     public ResponseEntity<List<FileDTO>> getPinnedFolders() {
         return ResponseEntity.ok(dataManager.getPinnedFolders().stream()
                 .map(f -> new FileDTO(f.getName(), pathService.getNormalizedAbsolutePath(f), true, true))
-                .collect(Collectors.toList()));
+                .toList());
     }
 
     @PostMapping("/pin")
