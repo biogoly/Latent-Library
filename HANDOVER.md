@@ -94,9 +94,10 @@ docker run -d --name sonarqube -p 9000:9000 sonarqube:community
 
 Console at `http://localhost:9000` (default `admin`/`admin`, forced change on first login). The
 CLI (`sonarqube-cli`, installed to `~/AppData/Local/sonarqube-cli/bin/sonar.exe` on this machine)
-is authenticated separately from the web console login — `sonar auth login -s http://localhost:9000`
-opens its own device-auth flow and must be run per machine/user, independent of the browser
-session. `sonar integrate claude --global` wired the MCP server and secret-scanning hooks into
+is authenticated separately from the web console login — `sonar auth login -s
+http://host.docker.internal:9000` opens its own device-auth flow and must be run per machine/user,
+independent of the browser session. Use `host.docker.internal`, not `localhost`, as the server URL
+here — see the MCP networking trap below for why `localhost` breaks the MCP server outright. `sonar integrate claude --global` wired the MCP server and secret-scanning hooks into
 the global Claude Code config (`~/.claude.json`, `~/.claude/settings.json`), not this repo's
 `.claude/settings.json` — this was a deliberate choice to cover every project on this machine, not
 just this one.
@@ -112,6 +113,22 @@ and any new Claude Code session started before Docker was running will not see t
 Docker is confirmed up. The `sonar-analyze` skill's CLI fallback (`sonar analyze agentic`) needs
 a Vortex-eligible organization, which self-hosted Community Edition is not; the working path for
 this setup is the `mcp__sonarqube__*` tools once loaded, not the CLI Vortex fallback.
+
+**`localhost:9000` in the stored auth breaks the MCP server, and a session restart alone will not
+fix it.** `sonar run mcp` runs the MCP server in its *own* container (`sonarsource/sonarqube-mcp`),
+separate from the `sonarqube` server container, and passes it `SONARQUBE_URL` straight from
+`~/.sonar/sonarqube-cli/state.json` (`sonar auth login`'s `-s` value). If that value is
+`http://localhost:9000` — the natural choice, and what `sonar auth login -s http://localhost:9000`
+in this doc's own example above sets — `localhost` inside the MCP container resolves to itself,
+not the host, so it can never reach the server container: `Connect to http://localhost:9000 ...
+Connection refused`, deterministically, no matter how many times the session restarts. Confirmed
+`host.docker.internal` resolves correctly on this machine (both from the host and from containers,
+via Docker Desktop's default network setup). Fix: re-run `sonar auth login -s
+http://host.docker.internal:9000` (manual/browser flow — the CLI itself refuses to run this
+non-interactively for an agent), then restart the Claude Code session once more. Verify the fix
+independently of the session by running `sonar run mcp --debug` directly in a terminal first and
+checking for `SonarQube MCP Server Started` / `URL: http://host.docker.internal:9000` in the
+output — that confirms connectivity without burning a session restart on a guess.
 
 ---
 
@@ -268,6 +285,20 @@ acts once `files.length > 0`, so it could never recover from an empty list — t
 blank until the folder was reopened manually. The indexing-status poll now detects `isIndexing`
 going `true -> false` while the current view is still empty and re-fetches once. Any other UI
 action that reads from the database right after triggering indexing needs the same follow-up.
+
+### Never return a Spring Data `Page<T>` directly from a controller
+
+`LibraryController.scanFolder` used to return `ResponseEntity<Page<ImageDTO>>` straight from
+`UserDataManager.getImagesInFolderPaginated`. Jackson serializes `PageImpl` as-is, which Spring
+Data itself flags at runtime (`PlainPageSerializationWarning`) as unsupported — there is no
+guarantee the field layout stays the same across a Spring Data version bump. Fixed by adding
+`PagedResponse<T>` (`model/PagedResponse.java`), an explicit DTO with exactly the fields the
+frontend already reads (`content`, `totalPages`, `totalElements`, `number`, `size`, `last`), and
+mapping to it via `PagedResponse.from(page)` before returning. The JSON shape is unchanged by
+design — `browser.js` reads these fields at the top level, not nested under a `page` object, which
+rules out Spring's own recommended fix (`@EnableSpringDataWebSupport(pageSerializationMode =
+VIA_DTO)`) since that changes the response shape. **Any new paginated endpoint should return
+`PagedResponse<T>`, never `Page<T>`, from the start.**
 
 ### An undefined custom property fails silently — always write a fallback
 
