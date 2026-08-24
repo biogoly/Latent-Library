@@ -2,12 +2,11 @@ package com.nilsson.backend.controller;
 
 import com.nilsson.backend.exception.ResourceNotFoundException;
 import com.nilsson.backend.model.ImageDTO;
+import com.nilsson.backend.model.PagedResponse;
 import com.nilsson.backend.service.IndexingService;
 import com.nilsson.backend.service.IndexingStatusTracker;
 import com.nilsson.backend.service.PathService;
 import com.nilsson.backend.service.UserDataManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +43,6 @@ import java.util.List;
 @RequestMapping("/api/library")
 public class LibraryController {
 
-    private static final Logger logger = LoggerFactory.getLogger(LibraryController.class);
     private final IndexingService indexingService;
     private final UserDataManager userDataManager;
     private final PathService pathService;
@@ -69,10 +67,10 @@ public class LibraryController {
      * @param skipIndex  If true, skips the background indexing step (useful for pure navigation).
      * @param page       The zero-based page index (default: 0).
      * @param size       The size of the page to return (default: 100).
-     * @return A {@link ResponseEntity} containing a {@link Page} of {@link ImageDTO}s.
+     * @return A {@link ResponseEntity} containing a {@link PagedResponse} of {@link ImageDTO}s.
      */
     @PostMapping("/scan")
-    public ResponseEntity<Page<ImageDTO>> scanFolder(
+    public ResponseEntity<PagedResponse<ImageDTO>> scanFolder(
             @RequestParam String path,
             @RequestParam(defaultValue = "false") boolean recursive,
             @RequestParam(defaultValue = "false") boolean skipIndex,
@@ -101,7 +99,7 @@ public class LibraryController {
         Pageable pageable = PageRequest.of(page, size);
         Page<ImageDTO> imagePage = userDataManager.getImagesInFolderPaginated(folder, recursive, pageable);
 
-        return ResponseEntity.ok(imagePage);
+        return ResponseEntity.ok(PagedResponse.from(imagePage));
     }
 
     /**
