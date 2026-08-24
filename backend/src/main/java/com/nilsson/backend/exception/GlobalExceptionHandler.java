@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 /**
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Clock CLOCK = Clock.systemDefaultZone();
 
     @ExceptionHandler(ToolboxException.class)
     public ResponseEntity<ErrorResponse> handleToolboxException(ToolboxException ex, HttpServletRequest request) {
@@ -34,7 +36,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 ex.getCode(),
                 ex.getMessage(),
                 ex.getStatus().value(),
-                LocalDateTime.now(),
+                LocalDateTime.now(CLOCK),
                 request.getRequestURI()
         );
         return new ResponseEntity<>(errorResponse, ex.getStatus());
@@ -54,7 +56,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "INTERNAL_SERVER_ERROR",
                 "An unexpected error occurred. Please check the logs.",
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                LocalDateTime.now(),
+                LocalDateTime.now(CLOCK),
                 request.getRequestURI()
         );
 

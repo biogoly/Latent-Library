@@ -171,6 +171,20 @@ class CommonStrategyTest {
         assertEquals("20", results.get("Steps"));
         assertEquals("Euler", results.get("Sampler"));
     }
+
+    @Test
+    @DisplayName("parse should ignore unrecognized parameter keys without throwing")
+    void testUnrecognizedKeyIsIgnored() {
+        String metadata = "a cat\nSteps: 20, Sampler: Euler, Seed: 5, Clip skip: 2, Version: v1.9.4";
+
+        Map<String, String> results = assertDoesNotThrow(() -> strategy.parse(metadata));
+
+        assertEquals("20", results.get("Steps"));
+        assertEquals("Euler", results.get("Sampler"));
+        assertEquals("5", results.get("Seed"));
+        assertFalse(results.containsKey("Clip skip"));
+        assertFalse(results.containsKey("Version"));
+    }
 }
 
 

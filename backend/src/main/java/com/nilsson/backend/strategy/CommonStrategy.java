@@ -111,6 +111,10 @@ public class CommonStrategy implements MetadataStrategy {
                             results.put(KEY_LORAS, value);
                         }
                     }
+                    default -> {
+                        // Intentionally ignore unrecognized metadata keys; this switch only
+                        // maps a known subset of A1111/Forge parameters.
+                    }
                 }
             }
 

@@ -73,10 +73,8 @@ public class NovelAIStrategy implements MetadataStrategy {
                 results.put("Seed", text);
             } else if (key.equals("sampler")) {
                 results.put("Sampler", text);
-            } else if (key.equals("software") && text.equalsIgnoreCase("novelai")) {
-                if (!results.containsKey("Model")) {
-                    results.put("Model", "NovelAI Diffusion");
-                }
+            } else if (key.equals("software") && text.equalsIgnoreCase("novelai") && !results.containsKey("Model")) {
+                results.put("Model", "NovelAI Diffusion");
             }
         } catch (Exception e) {
             log.error("Error during NovelAI JSON extraction for key: {}", key, e);

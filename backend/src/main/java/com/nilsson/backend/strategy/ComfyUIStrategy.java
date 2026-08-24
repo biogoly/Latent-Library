@@ -427,8 +427,8 @@ public class ComfyUIStrategy implements MetadataStrategy {
             for (JsonNode w : node.get("widgets_values")) {
                 if (w.isTextual()) {
                     String val = w.asText().trim();
-                    if (isValidPrompt(val)) {
-                        if (bestText == null || val.length() > bestText.length()) bestText = val;
+                    if (isValidPrompt(val) && (bestText == null || val.length() > bestText.length())) {
+                        bestText = val;
                     }
                 }
             }
@@ -559,23 +559,21 @@ public class ComfyUIStrategy implements MetadataStrategy {
             List<String> customPromptNodes = userDataManager.getCustomPromptNodes();
             List<String> customLoraNodes = userDataManager.getCustomLoraNodes();
 
-            if (customPromptNodes != null && customPromptNodes.stream().anyMatch(type::contains)) {
-                if (inputs.has("value") && inputs.get("value").isTextual()) {
-                    String txt = inputs.get("value").asText();
-                    String targetKey = (title.contains("negative") || isNegativeNode(node)) ? "Negative" : "Prompt";
-                    appendResult(results, targetKey, txt);
-                }
+            if (customPromptNodes != null && customPromptNodes.stream().anyMatch(type::contains)
+                    && inputs.has("value") && inputs.get("value").isTextual()) {
+                String txt = inputs.get("value").asText();
+                String targetKey = (title.contains("negative") || isNegativeNode(node)) ? "Negative" : "Prompt";
+                appendResult(results, targetKey, txt);
             }
 
-            if (customLoraNodes != null && customLoraNodes.stream().anyMatch(type::contains)) {
-                if (inputs.has("lora_stack") && inputs.get("lora_stack").isTextual()) {
-                    String stack = inputs.get("lora_stack").asText();
-                    String[] loras = stack.split(",");
-                    for (String lora : loras) {
-                        String clean = lora.trim();
-                        if (!clean.isEmpty()) {
-                            appendResult(results, "Loras", formatLoraString(clean, 1.0));
-                        }
+            if (customLoraNodes != null && customLoraNodes.stream().anyMatch(type::contains)
+                    && inputs.has("lora_stack") && inputs.get("lora_stack").isTextual()) {
+                String stack = inputs.get("lora_stack").asText();
+                String[] loras = stack.split(",");
+                for (String lora : loras) {
+                    String clean = lora.trim();
+                    if (!clean.isEmpty()) {
+                        appendResult(results, "Loras", formatLoraString(clean, 1.0));
                     }
                 }
             }
