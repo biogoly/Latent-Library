@@ -82,6 +82,37 @@ byte-identical to the copies in the sister repos, so update them as a suite.
 Claude Code reads them through the `.claude/skills` symlink (gitignored — it must be recreated
 after a fresh clone; `ai-setup-doctor` checks this).
 
+### SonarQube (local, self-hosted)
+
+SonarQube is run locally rather than via SonarQube Cloud, since this repo is private and the
+Cloud free tier caps out on private-repo LOC — Community Edition self-hosted has no such cap.
+Server runs as a plain Docker container, not through `sonar run mcp`'s own container management:
+
+```bash
+docker run -d --name sonarqube -p 9000:9000 sonarqube:community
+```
+
+Console at `http://localhost:9000` (default `admin`/`admin`, forced change on first login). The
+CLI (`sonarqube-cli`, installed to `~/AppData/Local/sonarqube-cli/bin/sonar.exe` on this machine)
+is authenticated separately from the web console login — `sonar auth login -s http://localhost:9000`
+opens its own device-auth flow and must be run per machine/user, independent of the browser
+session. `sonar integrate claude --global` wired the MCP server and secret-scanning hooks into
+the global Claude Code config (`~/.claude.json`, `~/.claude/settings.json`), not this repo's
+`.claude/settings.json` — this was a deliberate choice to cover every project on this machine, not
+just this one.
+
+No `sonar-project.properties` exists in this repo yet (`sonar integrate claude` reported
+"Config source: none detected"), so the MCP tools have no default project key — pass one
+explicitly, or add the properties file, before relying on the project-scoped skills
+(`sonar-quality-gate`, `sonar-list-issues`, etc.).
+
+The MCP server itself needs Docker running to start (`sonar run mcp` launches it in a container),
+and any new Claude Code session started before Docker was running will not see the
+`mcp__sonarqube__*` tools even after the integrate step succeeded — restart the session once
+Docker is confirmed up. The `sonar-analyze` skill's CLI fallback (`sonar analyze agentic`) needs
+a Vortex-eligible organization, which self-hosted Community Edition is not; the working path for
+this setup is the `mcp__sonarqube__*` tools once loaded, not the CLI Vortex fallback.
+
 ---
 
 ## Invariants and traps
