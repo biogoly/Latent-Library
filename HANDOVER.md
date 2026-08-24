@@ -21,7 +21,7 @@ and an ONNX-powered WD14 auto-tagger.
 | Desktop shell | Electron 31 | `electron/` |
 | Database | SQLite + Flyway migrations | `backend/data/` |
 
-App version `1.2.1`. Active branch is `main`.
+App version `1.2.2`. Active branch is `main`.
 
 ### Place in the Latent suite
 
