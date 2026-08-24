@@ -33,6 +33,7 @@ public class CommonStrategy implements MetadataStrategy {
     private static final String KEY_MODEL = "Model";
     private static final String KEY_LORAS = "Loras";
     private static final String KEY_DISTILLED_CFG = "Distilled CFG";
+    private static final String STEPS_PREFIX = "\nSteps:";
 
     @Override
     public Map<String, String> parse(String text) {
@@ -47,18 +48,28 @@ public class CommonStrategy implements MetadataStrategy {
             String positivePrompt = parts[0].trim();
             results.put("Prompt", positivePrompt);
 
-            String remaining = "";
+            String remaining;
             if (parts.length > 1) {
                 String[] negAndParams = parts[1].split("\nSteps: ");
                 results.put("Negative", negAndParams[0].trim());
                 if (negAndParams.length > 1) {
                     remaining = "Steps: " + negAndParams[1];
+                } else {
+                    int lastSteps = parts[1].lastIndexOf(STEPS_PREFIX);
+                    if (lastSteps != -1) {
+                        results.put("Negative", parts[1].substring(0, lastSteps).trim());
+                        remaining = parts[1].substring(lastSteps + 1);
+                    } else {
+                        remaining = parts[1];
+                    }
                 }
             } else {
-                String[] posAndParams = text.split("\nSteps: ");
-                if (posAndParams.length > 1) {
-                    results.put("Prompt", posAndParams[0].trim());
-                    remaining = "Steps: " + posAndParams[1];
+                int stepsIndex = text.lastIndexOf(STEPS_PREFIX);
+                if (stepsIndex != -1) {
+                    results.put("Prompt", text.substring(0, stepsIndex).trim());
+                    remaining = text.substring(stepsIndex + 1);
+                } else {
+                    remaining = text;
                 }
             }
 

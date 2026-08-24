@@ -147,6 +147,30 @@ class CommonStrategyTest {
         assertTrue(results.get("Loras").contains("<lora:OB半写实肖像画 Semi-realistic portrait painting:0.55>"));
         assertTrue(results.get("Loras").contains("<lora:Sommo Sci-Fi Concept Art by ChronoKnight - [FLUX & IL]:0.7>"));
     }
+
+    @Test
+    @DisplayName("parse should still extract Steps/Sampler when \"Steps:\" has no trailing space")
+    void testStepsWithoutTrailingSpace() {
+        String metadata = "a cat\nNegative prompt: blurry\nSteps:20, Sampler: Euler, Seed: 5";
+
+        Map<String, String> results = strategy.parse(metadata);
+
+        assertEquals("blurry", results.get("Negative"));
+        assertEquals("20", results.get("Steps"));
+        assertEquals("Euler", results.get("Sampler"));
+    }
+
+    @Test
+    @DisplayName("parse should still extract Steps/Sampler with no trailing space and no Negative prompt")
+    void testStepsWithoutTrailingSpaceNoNegative() {
+        String metadata = "a cat\nSteps:20, Sampler: Euler, Seed: 5";
+
+        Map<String, String> results = strategy.parse(metadata);
+
+        assertEquals("a cat", results.get("Prompt"));
+        assertEquals("20", results.get("Steps"));
+        assertEquals("Euler", results.get("Sampler"));
+    }
 }
 
 
