@@ -78,7 +78,7 @@ class IndexingServiceTest {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        indexingService.startIndexing(List.of(imageFile), 1L, (batchResult) -> {
+        indexingService.startIndexing(List.of(imageFile), 1L, batchResult -> {
             latch.countDown();
         });
 
@@ -217,7 +217,7 @@ class IndexingServiceTest {
 
         CountDownLatch latch = new CountDownLatch(1);
 
-        indexingService.startIndexing(files, 1L, (res) -> latch.countDown());
+        indexingService.startIndexing(files, 1L, res -> latch.countDown());
 
         Thread.sleep(100);
 

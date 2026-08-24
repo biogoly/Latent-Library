@@ -76,6 +76,7 @@ class FtsServiceTest {
         try {
             ftsService.updateFtsIndex(imageId);
         } catch (Exception ignored) {
+            // DB insert may throw without in-memory schema; repository calls are verified below
         }
 
         verify(metadataRepository).getMetadata(imageId);

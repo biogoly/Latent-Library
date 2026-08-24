@@ -41,6 +41,12 @@ import java.util.stream.Collectors;
 public class FtsService {
 
     private static final Logger logger = LoggerFactory.getLogger(FtsService.class);
+    private static final String COL_AI_TAGS = "ai_tags";
+    private static final String COL_USER_NOTES = "user_notes";
+    private static final String COL_CUSTOM_PROMPT = "custom_prompt";
+    private static final String COL_CUSTOM_NEGATIVE_PROMPT = "custom_negative_prompt";
+    private static final String COL_CUSTOM_MODEL = "custom_model";
+
     private final JdbcClient jdbcClient;
     private final ImageMetadataRepository metadataRepository;
     private final TagRepository tagRepository;
@@ -89,23 +95,23 @@ public class FtsService {
                 .param(imageId)
                 .query((rs, rowNum) -> {
                     Map<String, Object> map = new java.util.HashMap<>();
-                    map.put("ai_tags", rs.getString("ai_tags") != null ? rs.getString("ai_tags") : "");
-                    map.put("user_notes", rs.getString("user_notes") != null ? rs.getString("user_notes") : "");
-                    map.put("custom_prompt", rs.getString("custom_prompt") != null ? rs.getString("custom_prompt") : "");
-                    map.put("custom_negative_prompt", rs.getString("custom_negative_prompt") != null ? rs.getString("custom_negative_prompt") : "");
-                    map.put("custom_model", rs.getString("custom_model") != null ? rs.getString("custom_model") : "");
+                    map.put(COL_AI_TAGS, rs.getString(COL_AI_TAGS) != null ? rs.getString(COL_AI_TAGS) : "");
+                    map.put(COL_USER_NOTES, rs.getString(COL_USER_NOTES) != null ? rs.getString(COL_USER_NOTES) : "");
+                    map.put(COL_CUSTOM_PROMPT, rs.getString(COL_CUSTOM_PROMPT) != null ? rs.getString(COL_CUSTOM_PROMPT) : "");
+                    map.put(COL_CUSTOM_NEGATIVE_PROMPT, rs.getString(COL_CUSTOM_NEGATIVE_PROMPT) != null ? rs.getString(COL_CUSTOM_NEGATIVE_PROMPT) : "");
+                    map.put(COL_CUSTOM_MODEL, rs.getString(COL_CUSTOM_MODEL) != null ? rs.getString(COL_CUSTOM_MODEL) : "");
                     return map;
                 }).optional().orElse(Map.of());
 
         String customText = String.join(" ", 
-            (String) customData.getOrDefault("user_notes", ""),
-            (String) customData.getOrDefault("custom_prompt", ""),
-            (String) customData.getOrDefault("custom_negative_prompt", ""),
-            (String) customData.getOrDefault("custom_model", "")
+            (String) customData.getOrDefault(COL_USER_NOTES, ""),
+            (String) customData.getOrDefault(COL_CUSTOM_PROMPT, ""),
+            (String) customData.getOrDefault(COL_CUSTOM_NEGATIVE_PROMPT, ""),
+            (String) customData.getOrDefault(COL_CUSTOM_MODEL, "")
         );
 
         String globalText = (metadataText + " " + tagsText + " " + customText).trim();
-        String aiTags = (String) customData.getOrDefault("ai_tags", "");
+        String aiTags = (String) customData.getOrDefault(COL_AI_TAGS, "");
 
         jdbcClient.sql("INSERT OR REPLACE INTO metadata_fts(image_id, global_text, ai_tags) VALUES (?, ?, ?)")
                 .param(imageId)

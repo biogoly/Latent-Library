@@ -90,6 +90,9 @@ public class FileSystemService {
                 logger.info("Moved file to trash using 'gio trash': {}", file.getAbsolutePath());
                 return true;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.debug("'gio trash' interrupted: {}", e.getMessage());
         } catch (Exception e) {
             logger.debug("'gio trash' failed or not available: {}", e.getMessage());
         }
@@ -102,6 +105,9 @@ public class FileSystemService {
                 logger.info("Moved file to trash using 'trash-put': {}", file.getAbsolutePath());
                 return true;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.debug("'trash-put' interrupted: {}", e.getMessage());
         } catch (Exception e) {
             logger.debug("'trash-put' failed or not available: {}", e.getMessage());
         }

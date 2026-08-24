@@ -103,11 +103,15 @@ public class TaggerModelService {
 
                 logger.info("WD14 model download completed.");
             } catch (Exception e) {
+                if (e instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
                 logger.error("Failed to download tagging model", e);
                 try {
                     Files.deleteIfExists(modelPath);
                     Files.deleteIfExists(tagsPath);
                 } catch (IOException ignored) {
+                    // Suppress IO failure during rollback deletion of partial downloads
                 }
             } finally {
                 isDownloading = false;

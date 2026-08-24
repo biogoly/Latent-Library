@@ -133,6 +133,7 @@ class ImageTaggerServiceTest {
                     // but we are testing for the absence of deadlocks or NPEs.
                     imageTaggerService.tagImage(dummyFile, 0.5f);
                 } catch (Exception ignored) {
+                    // Expected exception with dummy model; testing concurrency/locking behavior
                 } finally {
                     latch.countDown();
                 }

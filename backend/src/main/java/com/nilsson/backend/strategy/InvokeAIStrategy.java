@@ -29,6 +29,7 @@ public class InvokeAIStrategy implements MetadataStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(InvokeAIStrategy.class);
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String KEY_MODEL = "Model";
 
     @Override
     public Map<String, String> parse(String text) {
@@ -58,7 +59,7 @@ public class InvokeAIStrategy implements MetadataStrategy {
             String text = value.asText();
 
             if (key.equals("model_name") || key.equals("model_weights")) {
-                results.put("Model", text);
+                results.put(KEY_MODEL, text);
             } else if (key.equals("positive_prompt") || (key.equals("prompt") && !results.containsKey("Prompt"))) {
                 results.put("Prompt", text);
             } else if (key.equals("negative_prompt")) {
@@ -67,8 +68,8 @@ public class InvokeAIStrategy implements MetadataStrategy {
                 results.put("CFG", text);
             } else if ((key.equals("sampler_name") || key.equals("scheduler")) && !results.containsKey("Sampler")) {
                 results.put("Sampler", text);
-            } else if (key.equals("variant") && !results.containsKey("Model")) {
-                results.put("Model", text);
+            } else if (key.equals("variant") && !results.containsKey(KEY_MODEL)) {
+                results.put(KEY_MODEL, text);
             }
         } catch (Exception e) {
             log.error("Error during InvokeAI JSON extraction for key: {}", key, e);

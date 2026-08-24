@@ -109,6 +109,10 @@ public class ThumbnailService {
                                 cpuPermits.release();
                             }
                         }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        logger.warn("Thumbnail generation interrupted for {}: {}",
+                                sourceFile.getAbsolutePath(), e.toString());
                     } catch (Exception e) {
                         // Logged at WARN: a failure here is invisible to the caller (getThumbnail
                         // just returns null and the controller falls back to the full image), so

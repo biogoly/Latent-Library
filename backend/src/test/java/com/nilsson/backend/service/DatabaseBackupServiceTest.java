@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -73,13 +74,13 @@ class DatabaseBackupServiceTest {
         
         // Verify it's a valid SQLite database by attempting to connect to it
         DriverManagerDataSource backupDs = new DriverManagerDataSource("jdbc:sqlite:" + expectedBackupPath.toAbsolutePath());
-        try (Connection conn = backupDs.getConnection(); Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery("SELECT val FROM test_data");
-            assertTrue(rs.next());
-            assertTrue(rs.getString("val").contains("important user data"));
-        } catch (Exception e) {
-            org.junit.jupiter.api.Assertions.fail("Backup file is not a valid SQLite database: " + e.getMessage());
-        }
+        assertDoesNotThrow(() -> {
+            try (Connection conn = backupDs.getConnection(); Statement stmt = conn.createStatement()) {
+                var rs = stmt.executeQuery("SELECT val FROM test_data");
+                assertTrue(rs.next());
+                assertTrue(rs.getString("val").contains("important user data"));
+            }
+        });
     }
 
     /**

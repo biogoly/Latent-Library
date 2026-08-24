@@ -289,23 +289,23 @@ public class DuplicateService {
     private class BKTree {
         private Node root;
 
-        public void add(ImageRecord record) {
-            if (record.dhash() == null) return;
+        public void add(ImageRecord imageRecord) {
+            if (imageRecord.dhash() == null) return;
             
             if (root == null) {
-                root = new Node(record);
+                root = new Node(imageRecord);
                 return;
             }
-            add(root, record);
+            add(root, imageRecord);
         }
 
-        private void add(Node node, ImageRecord record) {
-            int distance = Long.bitCount(node.record.dhash() ^ record.dhash());
+        private void add(Node node, ImageRecord imageRecord) {
+            int distance = Long.bitCount(node.imageRecord.dhash() ^ imageRecord.dhash());
             Node child = node.children.get(distance);
             if (child == null) {
-                node.children.put(distance, new Node(record));
+                node.children.put(distance, new Node(imageRecord));
             } else {
-                add(child, record);
+                add(child, imageRecord);
             }
         }
 
@@ -318,10 +318,10 @@ public class DuplicateService {
         }
 
         private void search(Node node, ImageRecord query, int threshold, List<ImageRecord> results) {
-            int distance = Long.bitCount(node.record.dhash() ^ query.dhash());
+            int distance = Long.bitCount(node.imageRecord.dhash() ^ query.dhash());
             
-            if (distance <= threshold && node.record.id() != query.id()) {
-                results.add(node.record);
+            if (distance <= threshold && node.imageRecord.id() != query.id()) {
+                results.add(node.imageRecord);
             }
 
             int min = Math.max(0, distance - threshold);
@@ -336,11 +336,11 @@ public class DuplicateService {
         }
 
         private class Node {
-            final ImageRecord record;
+            final ImageRecord imageRecord;
             final Map<Integer, Node> children = new HashMap<>();
 
-            Node(ImageRecord record) {
-                this.record = record;
+            Node(ImageRecord imageRecord) {
+                this.imageRecord = imageRecord;
             }
         }
     }

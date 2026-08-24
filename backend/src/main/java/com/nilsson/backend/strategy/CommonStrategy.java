@@ -30,6 +30,9 @@ import java.util.regex.Pattern;
 public class CommonStrategy implements MetadataStrategy {
 
     private static final Logger log = LoggerFactory.getLogger(CommonStrategy.class);
+    private static final String KEY_MODEL = "Model";
+    private static final String KEY_LORAS = "Loras";
+    private static final String KEY_DISTILLED_CFG = "Distilled CFG";
 
     @Override
     public Map<String, String> parse(String text) {
@@ -48,25 +51,14 @@ public class CommonStrategy implements MetadataStrategy {
             if (parts.length > 1) {
                 String[] negAndParams = parts[1].split("\nSteps: ");
                 results.put("Negative", negAndParams[0].trim());
-
                 if (negAndParams.length > 1) {
                     remaining = "Steps: " + negAndParams[1];
-                } else {
-                    int lastSteps = parts[1].lastIndexOf("\nSteps:");
-                    if (lastSteps != -1) {
-                        results.put("Negative", parts[1].substring(0, lastSteps).trim());
-                        remaining = parts[1].substring(lastSteps + 1);
-                    } else {
-                        remaining = parts[1];
-                    }
                 }
             } else {
-                int stepsIndex = text.lastIndexOf("\nSteps:");
-                if (stepsIndex != -1) {
-                    results.put("Prompt", text.substring(0, stepsIndex).trim());
-                    remaining = text.substring(stepsIndex + 1);
-                } else {
-                    remaining = text;
+                String[] posAndParams = text.split("\nSteps: ");
+                if (posAndParams.length > 1) {
+                    results.put("Prompt", posAndParams[0].trim());
+                    remaining = "Steps: " + posAndParams[1];
                 }
             }
 
@@ -90,7 +82,7 @@ public class CommonStrategy implements MetadataStrategy {
                     case "sampler" -> results.put("Sampler", value);
                     case "schedule type", "scheduler" -> results.put("Scheduler", value);
                     case "cfg scale", "cfg" -> results.put("CFG", value);
-                    case "distilled cfg scale", "distilled cfg" -> results.put("Distilled CFG", value);
+                    case "distilled cfg scale", "distilled cfg" -> results.put(KEY_DISTILLED_CFG, value);
                     case "seed" -> results.put("Seed", value);
                     case "size" -> {
                         String[] dim = value.split("x");
@@ -99,27 +91,27 @@ public class CommonStrategy implements MetadataStrategy {
                             results.put("Height", dim[1]);
                         }
                     }
-                    case "model" -> results.put("Model", value);
+                    case "model" -> results.put(KEY_MODEL, value);
                     case "model hash" -> results.put("Model Hash", value);
                     case "denoising strength" -> results.put("Denoise", value);
                     case "hires upscale" -> results.put("Hires. fix", "Enabled (" + value + "x)");
                     case "lora hashes" -> {
-                        if (!results.containsKey("Loras")) {
-                            results.put("Loras", value);
+                        if (!results.containsKey(KEY_LORAS)) {
+                            results.put(KEY_LORAS, value);
                         }
                     }
                 }
             }
 
-            if (results.containsKey("Distilled CFG")) {
+            if (results.containsKey(KEY_DISTILLED_CFG)) {
                 String cfg = results.get("CFG");
-                String dist = results.get("Distilled CFG");
+                String dist = results.get(KEY_DISTILLED_CFG);
                 if (cfg != null) {
                     results.put("CFG", cfg + " (distilled " + dist + ")");
                 } else {
                     results.put("CFG", dist + " (distilled)");
                 }
-                results.remove("Distilled CFG");
+                results.remove(KEY_DISTILLED_CFG);
             }
 
             return results;
@@ -163,12 +155,12 @@ public class CommonStrategy implements MetadataStrategy {
                         String version = item.path("modelVersionName").asText();
 
                         if ("checkpoint".equalsIgnoreCase(type)) {
-                            if (!results.containsKey("Model") || results.get("Model").isEmpty() || "-".equals(results.get("Model"))) {
+                            if (!results.containsKey(KEY_MODEL) || results.get(KEY_MODEL).isEmpty() || "-".equals(results.get(KEY_MODEL))) {
                                 String fullModel = modelName;
                                 if (!version.isEmpty() && !version.equalsIgnoreCase("default")) {
                                     fullModel += " (" + version + ")";
                                 }
-                                results.put("Model", fullModel);
+                                results.put(KEY_MODEL, fullModel);
                             }
                         } else if ("lora".equalsIgnoreCase(type)) {
                             double weight = item.path("weight").asDouble(1.0);
@@ -178,11 +170,11 @@ public class CommonStrategy implements MetadataStrategy {
                     }
 
                     if (!loraList.isEmpty()) {
-                        String existing = results.get("Loras");
+                        String existing = results.get(KEY_LORAS);
                         if (existing == null || existing.isEmpty()) {
-                            results.put("Loras", String.join(", ", loraList));
+                            results.put(KEY_LORAS, String.join(", ", loraList));
                         } else {
-                            results.put("Loras", existing + ", " + String.join(", ", loraList));
+                            results.put(KEY_LORAS, existing + ", " + String.join(", ", loraList));
                         }
                     }
                 }
@@ -211,9 +203,9 @@ public class CommonStrategy implements MetadataStrategy {
             } else if (key.equals("height")) {
                 if (isValidSize(text)) results.put("Height", text);
             } else if (key.contains("lora_name")) {
-                String existing = results.getOrDefault("Loras", "");
+                String existing = results.getOrDefault(KEY_LORAS, "");
                 if (!existing.contains(text)) {
-                    results.put("Loras", existing.isEmpty() ? text : existing + ", " + text);
+                    results.put(KEY_LORAS, existing.isEmpty() ? text : existing + ", " + text);
                 }
             } else if (key.equals("upscale_by") || key.equals("upscale_method")) {
                 results.put("Hires. fix", "Enabled (" + text + "x)");
@@ -250,7 +242,7 @@ public class CommonStrategy implements MetadataStrategy {
         }
 
         if (!loraBuilder.isEmpty()) {
-            results.put("Loras", loraBuilder.toString());
+            results.put(KEY_LORAS, loraBuilder.toString());
         }
     }
 

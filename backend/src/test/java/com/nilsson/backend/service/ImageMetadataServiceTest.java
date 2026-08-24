@@ -52,7 +52,7 @@ class ImageMetadataServiceTest {
 
     @Test
     @DisplayName("getCachedMetadata should return from DB if present")
-    void getCachedMetadata_ShouldReturnFromCache() throws IOException {
+    void getCachedMetadata_ShouldReturnFromCache() {
         String path = "/test/img.png";
         File file = mock(File.class);
         when(file.exists()).thenReturn(true);

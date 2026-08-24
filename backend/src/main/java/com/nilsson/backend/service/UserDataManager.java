@@ -70,7 +70,6 @@ public class UserDataManager {
     private final PathService pathService;
     private final SearchRepository searchRepository;
     private final FileSystemService fileSystemService;
-    private final DHashService dHashService;
     private final FtsService ftsService;
 
     public UserDataManager(DatabaseService db,
@@ -83,7 +82,6 @@ public class UserDataManager {
                            PathService pathService,
                            SearchRepository searchRepository,
                            FileSystemService fileSystemService,
-                           DHashService dHashService,
                            FtsService ftsService,
                            @Value("${app.files.hash-chunk-size-kb:64}") int hashChunkSizeKb) {
         this.db = db;
@@ -97,7 +95,6 @@ public class UserDataManager {
         this.pathService = pathService;
         this.searchRepository = searchRepository;
         this.fileSystemService = fileSystemService;
-        this.dHashService = dHashService;
         this.ftsService = ftsService;
         this.hashChunkSize = hashChunkSizeKb * 1024;
     }
@@ -108,7 +105,7 @@ public class UserDataManager {
         }
         List<String> paths = files.stream()
                 .map(pathService::getNormalizedAbsolutePath)
-                .collect(Collectors.toList());
+                .toList();
 
         Map<String, ImageInfo> infoMap = imageRepo.getBulkImageInfo(paths);
 
@@ -120,7 +117,7 @@ public class UserDataManager {
                     }
                     return new ImageDTO(path, 0, "");
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -152,7 +149,7 @@ public class UserDataManager {
                     }
                     return new ImageDTO(path, 0, "");
                 })
-                .collect(Collectors.toList());
+                .toList();
 
         return new PageImpl<>(dtos, pageable, pathsPage.getTotalElements());
     }
@@ -185,7 +182,7 @@ public class UserDataManager {
                     .filter(s -> !s.isEmpty())
                     .distinct()
                     .sorted(String.CASE_INSENSITIVE_ORDER)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         if ("Sampler".equals(key)) {
             return raw.stream()
@@ -197,13 +194,13 @@ public class UserDataManager {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .sorted(String.CASE_INSENSITIVE_ORDER)
-                    .collect(Collectors.toList());
+                    .toList();
         }
         return raw.stream()
                 .filter(s -> s != null && !s.isBlank())
                 .distinct()
                 .sorted(String.CASE_INSENSITIVE_ORDER)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private String cleanLoraName(String raw) {
@@ -261,7 +258,7 @@ public class UserDataManager {
                             }
                         })
                         .filter(java.util.Objects::nonNull)
-                        .collect(Collectors.toList());
+                        .toList();
             } catch (Exception e) {
                 log.error("Async search filter operation failed", e);
                 throw new ApplicationException("Failed to execute filtered search query.", e);
@@ -452,14 +449,14 @@ public class UserDataManager {
         return imageRepo.getStarredPaths().stream()
                 .map(pathService::resolve)
                 .filter(f -> f != null && f.exists())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<File> getPinnedFolders() {
         return pinnedFolderRepository.getPinnedFolders().stream()
                 .map(pathService::resolve)
                 .filter(f -> f != null && f.exists())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void addPinnedFolder(File folder) {
@@ -559,14 +556,14 @@ public class UserDataManager {
                 .limit(4)
                 .map(pathService::resolve)
                 .filter(f -> f != null && f.exists())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<File> getFilesFromCollection(String collectionName) {
         return collectionService.getFilePathsFromCollection(collectionName).stream()
                 .map(pathService::resolve)
                 .filter(f -> f != null && f.exists())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public AppSettings getSettings() {

@@ -7,9 +7,7 @@ import com.drew.metadata.Tag;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nilsson.backend.exception.ApplicationException;
 import com.nilsson.backend.exception.ResourceNotFoundException;
-import com.nilsson.backend.exception.ValidationException;
 import com.nilsson.backend.strategy.ComfyUIStrategy;
 import com.nilsson.backend.strategy.MetadataStrategy;
 import org.slf4j.Logger;
@@ -20,7 +18,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -48,6 +45,12 @@ import java.util.*;
 public class MetadataService {
 
     private static final Logger logger = LoggerFactory.getLogger(MetadataService.class);
+    private static final String KEY_PROMPT = "Prompt";
+    private static final String KEY_SOFTWARE = "Software";
+    private static final String UNKNOWN = "Unknown";
+    private static final String STEPS_PREFIX = "Steps:";
+    private static final String JSON_FIELD_PROMPT = "prompt";
+    private static final String SOFTWARE_COMFYUI = "ComfyUI";
 
     private final ObjectMapper mapper = new ObjectMapper()
             .configure(JsonParser.Feature.ALLOW_NON_NUMERIC_NUMBERS, true)
@@ -84,7 +87,7 @@ public class MetadataService {
         Map<String, String> results = new HashMap<>();
 
         if (rawData == null || rawData.isEmpty()) {
-            results.put("Prompt", "No metadata found in this image.");
+            results.put(KEY_PROMPT, "No metadata found in this image.");
             return results;
         }
 
@@ -92,15 +95,15 @@ public class MetadataService {
         String trimmed = rawData.trim();
 
         if (trimmed.startsWith("{") ||
-                (trimmed.startsWith("\"") && trimmed.contains("\"prompt\""))) {
+                (trimmed.startsWith("\"") && trimmed.contains("\"" + JSON_FIELD_PROMPT + "\""))) {
             parseJsonMetadata(trimmed, results);
-        } else if (rawData.contains("Steps:") &&
+        } else if (rawData.contains(STEPS_PREFIX) &&
                 (rawData.contains("Sampler:") || rawData.contains("Schedule type:"))) {
             results.putAll(textParamsParser.parse(rawData));
-            results.put("Software", "A1111 / Forge");
+            results.put(KEY_SOFTWARE, "A1111 / Forge");
         } else {
-            results.put("Prompt", rawData);
-            results.put("Software", "Unknown");
+            results.put(KEY_PROMPT, rawData);
+            results.put(KEY_SOFTWARE, UNKNOWN);
         }
 
         return results;
@@ -243,28 +246,28 @@ public class MetadataService {
 
             JsonNode root = mapper.readTree(cleanJson);
 
-            String software = "Unknown";
+            String software = UNKNOWN;
             if (root.has("sui_image_params")) software = "SwarmUI";
             else if (root.has("meta") && root.get("meta").has("invokeai_metadata")) software = "InvokeAI";
             else if (root.has("uc")) software = "NovelAI";
             else {
-                if (root.has("prompt") && root.get("prompt").isObject()) {
-                    JsonNode promptNode = root.get("prompt");
+                if (root.has(JSON_FIELD_PROMPT) && root.get(JSON_FIELD_PROMPT).isObject()) {
+                    JsonNode promptNode = root.get(JSON_FIELD_PROMPT);
                     Iterator<String> promptKeys = promptNode.fieldNames();
                     if (promptKeys.hasNext()) {
                         String firstPk = promptKeys.next();
                         if (firstPk.matches("\\d+") && promptNode.get(firstPk).has("class_type")) {
-                            software = "ComfyUI";
+                            software = SOFTWARE_COMFYUI;
                         }
                     }
                 }
 
-                if ("Unknown".equals(software)) {
+                if (UNKNOWN.equals(software)) {
                     Iterator<String> keys = root.fieldNames();
                     if (keys.hasNext()) {
                         String firstKey = keys.next();
                         if (firstKey.matches("\\d+") && root.get(firstKey).has("class_type")) {
-                            software = "ComfyUI";
+                            software = SOFTWARE_COMFYUI;
                         } else if (root.has("nodes") && root.has("links")) {
                             software = "ComfyUI (Workflow)";
                         }
@@ -272,7 +275,7 @@ public class MetadataService {
                 }
             }
 
-            results.put("Software", software);
+            results.put(KEY_SOFTWARE, software);
 
             findKeysRecursively(root, results, software);
 

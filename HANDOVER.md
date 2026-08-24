@@ -251,6 +251,16 @@ and must also break. `startWatching`/`stopWatching` are `synchronized` because t
 **two overlapping `/library/scan` calls per navigation** (visible as duplicated `Indexing folder:`
 log lines), which previously let one watcher escape being recorded and therefore being stopped.
 
+### Multiple constructors on Spring beans need explicit `@Autowired`
+
+`ComfyUIStrategy` defines two constructors: one injecting `@Lazy UserDataManager` for custom node
+resolution, and a no-arg constructor used by isolated unit tests. Without `@Autowired` on the injection
+constructor, Spring Boot resolves the no-arg constructor by default, leaving `userDataManager == null`
+in the live application context and silently bypassing user-defined custom prompt and LoRA node
+extraction during indexing. **Whenever a Spring component has multiple constructors (e.g. for testing
+convenience), explicitly annotate the DI constructor with `@Autowired`**, or provide mock-based test
+factories instead.
+
 ### Don't swallow failures at `trace`
 
 `ThumbnailService` logged generation failures at `logger.trace` and returned `null`, so an

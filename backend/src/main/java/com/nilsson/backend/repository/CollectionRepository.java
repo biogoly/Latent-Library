@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 public class CollectionRepository {
 
     private static final Logger logger = LoggerFactory.getLogger(CollectionRepository.class);
+    private static final String SELECT_COLLECTION_ID_BY_NAME = "SELECT id FROM collections WHERE name = ?";
+    private static final String COLLECTION_NOT_FOUND_PREFIX = "Collection not found: ";
     private final JdbcClient jdbcClient;
     private final ObjectMapper objectMapper;
 
@@ -160,11 +162,11 @@ public class CollectionRepository {
             return;
         }
 
-        Integer collectionId = jdbcClient.sql("SELECT id FROM collections WHERE name = ?")
+        Integer collectionId = jdbcClient.sql(SELECT_COLLECTION_ID_BY_NAME)
                 .param(collectionName.trim())
                 .query(Integer.class)
                 .optional()
-                .orElseThrow(() -> new ValidationException("Collection not found: " + collectionName));
+                .orElseThrow(() -> new ValidationException(COLLECTION_NOT_FOUND_PREFIX + collectionName));
 
         long now = System.currentTimeMillis();
         int batchSize = 500;
@@ -194,11 +196,11 @@ public class CollectionRepository {
             return;
         }
 
-        Integer collectionId = jdbcClient.sql("SELECT id FROM collections WHERE name = ?")
+        Integer collectionId = jdbcClient.sql(SELECT_COLLECTION_ID_BY_NAME)
                 .param(collectionName.trim())
                 .query(Integer.class)
                 .optional()
-                .orElseThrow(() -> new ValidationException("Collection not found: " + collectionName));
+                .orElseThrow(() -> new ValidationException(COLLECTION_NOT_FOUND_PREFIX + collectionName));
 
         int batchSize = 500;
         for (int i = 0; i < imageIds.size(); i += batchSize) {
@@ -269,11 +271,11 @@ public class CollectionRepository {
             return;
         }
 
-        Integer collectionId = jdbcClient.sql("SELECT id FROM collections WHERE name = ?")
+        Integer collectionId = jdbcClient.sql(SELECT_COLLECTION_ID_BY_NAME)
                 .param(collectionName.trim())
                 .query(Integer.class)
                 .optional()
-                .orElseThrow(() -> new ValidationException("Collection not found: " + collectionName));
+                .orElseThrow(() -> new ValidationException(COLLECTION_NOT_FOUND_PREFIX + collectionName));
 
         int batchSize = 500;
         for (int i = 0; i < imageIds.size(); i += batchSize) {
@@ -303,11 +305,11 @@ public class CollectionRepository {
             return;
         }
 
-        Integer collectionId = jdbcClient.sql("SELECT id FROM collections WHERE name = ?")
+        Integer collectionId = jdbcClient.sql(SELECT_COLLECTION_ID_BY_NAME)
                 .param(collectionName.trim())
                 .query(Integer.class)
                 .optional()
-                .orElseThrow(() -> new ValidationException("Collection not found: " + collectionName));
+                .orElseThrow(() -> new ValidationException(COLLECTION_NOT_FOUND_PREFIX + collectionName));
 
         int batchSize = 500;
         for (int i = 0; i < imageIds.size(); i += batchSize) {

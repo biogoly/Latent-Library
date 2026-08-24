@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -76,10 +77,8 @@ class PinnedFolderRepositoryTest {
     void addPinnedFolder_ShouldEnforceUniqueness() {
         repository.addPinnedFolder("/unique/path");
 
-        // Should not throw exception or create duplicate
-        try {
-            repository.addPinnedFolder("/unique/path");
-        } catch (Exception ignored) {
-        }
+        assertDoesNotThrow(() -> repository.addPinnedFolder("/unique/path"));
+        List<String> folders = repository.getPinnedFolders();
+        assertEquals(1, folders.stream().filter(f -> f.equals("/unique/path")).count());
     }
 }

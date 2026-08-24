@@ -38,6 +38,8 @@ import java.util.stream.Collectors;
 public class SearchRepository {
 
     private static final Logger log = LoggerFactory.getLogger(SearchRepository.class);
+    private static final String FILTER_INCLUDE_AI_TAGS = "includeAiTags";
+    private static final String FILTER_RATING = "Rating";
     private final JdbcClient jdbcClient;
 
     private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^a-zA-Z0-9]+");
@@ -65,8 +67,8 @@ public class SearchRepository {
                     .map(s -> NON_ALPHANUMERIC.matcher(s).replaceAll(" ") + "*")
                     .collect(Collectors.joining(" AND "));
 
-            boolean includeAiTags = filters != null && filters.containsKey("includeAiTags") &&
-                    "true".equalsIgnoreCase(filters.get("includeAiTags").get(0));
+            boolean includeAiTags = filters != null && filters.containsKey(FILTER_INCLUDE_AI_TAGS) &&
+                    "true".equalsIgnoreCase(filters.get(FILTER_INCLUDE_AI_TAGS).get(0));
 
             if (includeAiTags) {
                 ftsClauses.add("(" + generalQuery + ")");
@@ -80,14 +82,14 @@ public class SearchRepository {
                 String key = entry.getKey();
                 List<String> values = entry.getValue();
 
-                if ("includeAiTags".equals(key)) continue;
+                if (FILTER_INCLUDE_AI_TAGS.equals(key)) continue;
                 if (values == null || values.isEmpty()) continue;
 
                 List<String> validValues = values.stream()
                         .filter(v -> v != null && !v.isBlank() && !"All".equalsIgnoreCase(v))
                         .toList();
                 if (validValues.isEmpty()) continue;
-                if ("Rating".equals(key)) continue;
+                if (FILTER_RATING.equals(key)) continue;
 
                 String fieldQuery = validValues.stream()
                         .map(v -> FtsService.formatFtsToken(key, v))
@@ -108,8 +110,8 @@ public class SearchRepository {
             params.add(collectionName);
         }
 
-        if (filters != null && filters.containsKey("Rating")) {
-            List<String> ratingValues = filters.get("Rating").stream()
+        if (filters != null && filters.containsKey(FILTER_RATING)) {
+            List<String> ratingValues = filters.get(FILTER_RATING).stream()
                     .filter(v -> v != null && !v.isBlank() && !"All".equalsIgnoreCase(v))
                     .toList();
             if (!ratingValues.isEmpty()) {

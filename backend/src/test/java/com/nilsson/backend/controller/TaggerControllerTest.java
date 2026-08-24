@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import java.io.File;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -83,10 +84,9 @@ class TaggerControllerTest {
     @DisplayName("POST /api/tagger/tag-folder should return 202 Accepted for valid path")
     void tagFolder_ShouldReturnAccepted() throws Exception {
         String path = "/test/images";
-        File mockDir = new File(path);
         // We can't easily mock File.exists() for a real File object without PowerMock,
         // but we can mock the pathService to return a mock File.
-        File mockFile = org.mockito.Mockito.mock(File.class);
+        File mockFile = mock(File.class);
         when(mockFile.exists()).thenReturn(true);
         when(mockFile.getName()).thenReturn("images");
         when(pathService.resolve(anyString())).thenReturn(mockFile);

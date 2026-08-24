@@ -280,6 +280,7 @@ public class IndexingService {
             try {
                 watchService.close();
             } catch (IOException ignored) {
+                // Suppress exception on closing WatchService during cleanup
             }
             watchService = null;
         }

@@ -1,6 +1,5 @@
 package com.nilsson.backend.service;
 
-import com.nilsson.backend.exception.ImageProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,6 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Service for calculating perceptual difference hashes (dHash) for images.

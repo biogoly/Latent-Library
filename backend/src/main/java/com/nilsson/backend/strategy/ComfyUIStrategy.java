@@ -5,6 +5,7 @@ import com.nilsson.backend.exception.ApplicationException;
 import com.nilsson.backend.service.UserDataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +42,7 @@ public class ComfyUIStrategy implements MetadataStrategy {
 
     private final UserDataManager userDataManager;
 
+    @Autowired
     public ComfyUIStrategy(@Lazy UserDataManager userDataManager) {
         this.userDataManager = userDataManager;
     }
@@ -98,7 +100,7 @@ public class ComfyUIStrategy implements MetadataStrategy {
     );
 
     private static final Pattern LORA_TAG_PATTERN =
-            Pattern.compile("<lora:([^:>]+)(?::([^:>]+))?.*?>");
+            Pattern.compile("<lora:([^:>]+)(?::([^:>]+))?[^>]*>");
 
     @Override
     public void extract(String key, JsonNode value, JsonNode parentNode, Map<String, String> results) {
@@ -894,6 +896,7 @@ public class ComfyUIStrategy implements MetadataStrategy {
                 try {
                     strength = Double.parseDouble(strVal);
                 } catch (NumberFormatException e) {
+                    // Fallback to default strength 1.0 if not parseable
                 }
             }
             String existing = results.getOrDefault("Loras", "");
