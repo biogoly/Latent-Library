@@ -261,6 +261,25 @@ extraction during indexing. **Whenever a Spring component has multiple construct
 convenience), explicitly annotate the DI constructor with `@Autowired`**, or provide mock-based test
 factories instead.
 
+### A "safe" lint cleanup silently dropped a parsing fallback
+
+Applying the `S1192` (duplicate string literal) fix to `CommonStrategy.parse()` turned into an
+unreviewed rewrite of the actual Steps/Negative-prompt splitting logic, not just a literal
+extraction: it replaced `text.lastIndexOf("\nSteps:")` (matches with or without a trailing space)
+with `text.split("\nSteps: ")` (space required), and dropped the original fallback branch entirely.
+Metadata where "Steps:" isn't followed by a space (formatting some non-A1111/Forge exporters use)
+went from parsing correctly to losing **every** trailing parameter silently — `Steps`, `Sampler`,
+`CFG`, `Seed`, etc. all came back `null`, with the whole tail absorbed into `Negative`/`Prompt`
+instead. No existing test caught it; `CommonStrategyTest` never exercised that formatting.
+
+Confirmed as a genuine regression (not a pre-existing gap) by checking out the pre-cleanup version
+of the file and running the same input against both — pre-cleanup parsed correctly, post-cleanup
+silently lost the fields. Fixed by restoring the `lastIndexOf` fallback and adding regression tests
+for both the with- and without-"Negative prompt:" cases. **Lint-driven refactors of parsing/string-
+matching code need the same behavioral verification as a manual change — a rule ID in the commit
+message is not proof the fix was mechanical.** Diff the actual logic, not just whether it compiles
+and existing tests still pass, since existing tests may simply not cover the changed branch.
+
 ### Don't swallow failures at `trace`
 
 `ThumbnailService` logged generation failures at `logger.trace` and returned `null`, so an
