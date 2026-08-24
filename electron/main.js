@@ -91,6 +91,11 @@ function createSplashWindow() {
 
     splashWindow.loadFile(path.join(__dirname, 'splash.html'));
     splashWindow.center();
+    splashWindow.webContents.on('did-finish-load', () => {
+        splashWindow.webContents.executeJavaScript(
+            `document.getElementById('version').textContent = ${JSON.stringify('v' + app.getVersion())};`
+        );
+    });
 }
 
 function createWindow() {

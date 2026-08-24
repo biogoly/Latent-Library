@@ -278,6 +278,16 @@ shared asset, so a brand-mark change that only touches `latent-mark.svg` and `ic
 stale branding for however long the splash window is visible. If the mark changes again, grep the
 repo for the SVG path data rather than assuming the shared asset files cover every surface.
 
+The version number had the identical problem: `splash.html`'s `.version` div was a hardcoded
+`v1.1.1` string, never bumped alongside `electron/package.json`'s `version` field, so it silently
+lagged a release behind ([user report](https://github.com/erroralex/Latent-Library/issues) after
+`v1.2.1`). Fixed by giving the div an `id="version"` and having `main.js`'s `createSplashWindow()`
+inject `app.getVersion()` via `webContents.executeJavaScript` on `did-finish-load` — there's no
+preload script (`contextIsolation: true`, no `nodeIntegration`), so this was the lowest-friction
+way to get a Node value into the splash renderer. Any other static text in `splash.html` that
+mirrors data available in the main process (version, build date, etc.) should be wired the same
+way rather than hand-typed.
+
 ### Re-releasing an existing tag means deleting it first, and CI double-published on top of it
 
 Moving `v1.2.0` to include the icon fixes required deleting the tag both locally and on `origin`
